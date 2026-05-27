@@ -1,0 +1,23 @@
+{
+  "name": "aeonpass-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for the AeonPass platform API",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "aeonpass-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
