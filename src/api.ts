@@ -23,13 +23,17 @@ async function request(
 
   const headers: Record<string, string> = {
     "X-API-KEY": getApiKey(),
-    "Content-Type": "application/json",
   };
+
+  const hasBody = method !== "GET" && method !== "DELETE";
+  if (hasBody) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const res = await fetch(url.toString(), {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: hasBody ? JSON.stringify(body ?? {}) : undefined,
   });
 
   const text = await res.text();
