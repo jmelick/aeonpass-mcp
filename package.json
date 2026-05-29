@@ -10,7 +10,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js"
+    "dev:http": "tsx src/http.ts",
+    "start": "node dist/index.js",
+    "serve": "node dist/http.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1"

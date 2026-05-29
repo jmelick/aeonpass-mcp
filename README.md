@@ -1,17 +1,25 @@
 # AeonPass MCP Server
 
-MCP server for the [AeonPass](https://aeonpass-dev-portal.vercel.app) platform API. Exposes Techaeon and Group operations as tools for Claude Code.
+MCP server for the [AeonPass](https://aeonpass-dev-portal.vercel.app) platform API. Exposes Techaeon and Group operations as tools for Claude.
+
+## Getting an API Key
+
+Get your key from the [AeonPass Developer Portal](https://aeonpass-dev-portal.vercel.app) before starting.
 
 ## Setup
 
 ```bash
-# Clone & build
 git clone git@github.com:jmelick/aeonpass-mcp.git
 cd aeonpass-mcp
 npm install
 npm run build
+```
 
-# Register with Claude Code (replace YOUR_API_KEY)
+### Claude Code (CLI)
+
+Runs as a local stdio process — no server needed.
+
+```bash
 claude mcp add --transport stdio \
   --env AEONPASS_API_KEY=YOUR_API_KEY \
   --scope user \
@@ -20,9 +28,28 @@ claude mcp add --transport stdio \
 
 Restart Claude Code. The `aeonpass` tools will be available in all projects.
 
-## Getting an API Key
+### Claude.ai / Claude Desktop (HTTP)
 
-Get your key from the [AeonPass Developer Portal](https://aeonpass-dev-portal.vercel.app). Include it as `X-API-KEY` — the MCP server handles this automatically.
+Run the HTTP server locally, then point Claude at it.
+
+**1. Create a `.env` file:**
+```bash
+echo "AEONPASS_API_KEY=YOUR_API_KEY" > .env
+```
+
+**2. Start the server** (keep this running):
+```bash
+npm run serve
+# → AeonPass MCP server listening on http://localhost:3001
+```
+
+To use a different port: `PORT=3002 npm run serve`
+
+**3. Add to Claude:**
+- **Claude.ai** → Settings → Integrations → Add custom integration → `http://localhost:3001`
+- **Claude Desktop** → Settings → Developer → Add MCP server → `http://localhost:3001`
+
+> The server must be running before you open Claude. You can add it to your login items or a shell profile to start it automatically.
 
 ## Tools
 
@@ -68,7 +95,9 @@ Once installed, ask Claude things like:
 ## Development
 
 ```bash
-npm run dev     # run with tsx (hot reload)
-npm run build   # compile TypeScript
-npm run start   # run compiled JS
+npm run build       # compile TypeScript
+npm run dev         # stdio mode with tsx (hot reload)
+npm run dev:http    # HTTP mode with tsx (hot reload)
+npm run start       # stdio mode (compiled)
+npm run serve       # HTTP mode (compiled)
 ```
