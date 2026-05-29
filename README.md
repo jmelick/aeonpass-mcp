@@ -28,28 +28,49 @@ claude mcp add --transport stdio \
 
 Restart Claude Code. The `aeonpass` tools will be available in all projects.
 
-### Claude.ai / Claude Desktop (HTTP)
+### Claude Desktop App (config file)
 
-Run the HTTP server locally, then point Claude at it.
+The Claude desktop app supports stdio MCP servers via a local config file — no HTTP server needed.
 
-**1. Create a `.env` file:**
-```bash
-echo "AEONPASS_API_KEY=YOUR_API_KEY" > .env
+**1. Open the config file:**
+```
+~/Library/Application Support/Claude/claude_desktop_config.json
 ```
 
-**2. Start the server** (keep this running):
-```bash
-npm run serve
-# → AeonPass MCP server listening on http://localhost:3001
+**2. Add the `mcpServers` block** (create the key if it doesn't exist):
+```json
+{
+  "mcpServers": {
+    "aeonpass": {
+      "command": "node",
+      "args": ["/absolute/path/to/aeonpass-mcp/dist/index.js"],
+      "env": {
+        "AEONPASS_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  }
+}
 ```
 
-To use a different port: `PORT=12345 npm run serve`
+**3. Restart the Claude desktop app.** The AeonPass tools will be available in all chats.
 
-**3. Add to Claude:**
-- **Claude.ai** → Settings → Integrations → Add custom integration → `http://localhost:47821`
-- **Claude Desktop** → Settings → Developer → Add MCP server → `http://localhost:47821`
+### Claude.ai Web (HTTP via tunnel)
 
-> The server must be running before you open Claude. You can add it to your login items or a shell profile to start it automatically.
+Claude.ai web requires a publicly accessible HTTPS URL — `localhost` won't work. Use a temporary Cloudflare tunnel:
+
+```bash
+# Terminal 1 — start the MCP HTTP server
+AEONPASS_API_KEY=YOUR_API_KEY npm run serve
+# → listening on http://localhost:47821
+
+# Terminal 2 — open a public tunnel (no account needed)
+npx cloudflared tunnel --url http://localhost:47821
+# → https://some-random-name.trycloudflare.com
+```
+
+Then: Claude.ai → Settings → Integrations → Add custom integration → paste the `https://` tunnel URL.
+
+> The tunnel URL changes each time you restart. For a stable URL you'd need a persistent tunnel or hosted deployment.
 
 ## Tools
 
