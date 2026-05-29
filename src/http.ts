@@ -7,7 +7,7 @@ import http from "http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createServer } from "./server.js";
 
-const PORT = parseInt(process.env.PORT ?? "3001", 10);
+const PORT = parseInt(process.env.PORT ?? "47821", 10);
 
 const httpServer = http.createServer(async (req, res) => {
   // Health check

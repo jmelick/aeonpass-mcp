@@ -43,11 +43,11 @@ npm run serve
 # → AeonPass MCP server listening on http://localhost:3001
 ```
 
-To use a different port: `PORT=3002 npm run serve`
+To use a different port: `PORT=12345 npm run serve`
 
 **3. Add to Claude:**
-- **Claude.ai** → Settings → Integrations → Add custom integration → `http://localhost:3001`
-- **Claude Desktop** → Settings → Developer → Add MCP server → `http://localhost:3001`
+- **Claude.ai** → Settings → Integrations → Add custom integration → `http://localhost:47821`
+- **Claude Desktop** → Settings → Developer → Add MCP server → `http://localhost:47821`
 
 > The server must be running before you open Claude. You can add it to your login items or a shell profile to start it automatically.
 
