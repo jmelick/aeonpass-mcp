@@ -164,5 +164,265 @@ export function createServer(): McpServer {
     })
   );
 
+  // ── Event Tools ──
+
+  server.tool(
+    "get_event",
+    "Get public details of an event by ID: title, dates, status, type, venue/design reference IDs, ticketing status",
+    { id: z.string().describe("Event GUID") },
+    async ({ id }) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.getEvent(id), null, 2) }],
+    })
+  );
+
+  // ── Guest Tools ──
+
+  server.tool(
+    "list_guests",
+    "List guests for an event with pagination, search, and filtering. Returns { data: [...], pagination: { totalCount, page, pageSize, totalPages } }. Each guest includes invitation status.",
+    {
+      eventId: z.string().describe("Event GUID"),
+      pageNo: z.number().optional().describe("Page number (1-based)"),
+      pageSize: z.number().optional().describe("Results per page"),
+      searchTerm: z.string().optional().describe("Search by name, email, or phone"),
+      groupId: z.string().optional().describe("Filter by guest group GUID"),
+      designMappingId: z.string().optional().describe("Filter by invitation design GUID"),
+      sortBy: z.string().optional().describe("Field to sort by"),
+      sortDirection: z.enum(["asc", "desc"]).optional(),
+    },
+    async ({ eventId, ...params }) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.listGuests(eventId, params), null, 2) }],
+    })
+  );
+
+  server.tool(
+    "create_guest",
+    "Create a new guest for an event and optionally issue an invitation. groupId is required — use list_guest_groups to find valid IDs.",
+    {
+      eventId: z.string().describe("Event GUID"),
+      firstName: z.string().describe("Guest first name (required)"),
+      lastName: z.string().optional(),
+      displayName: z.string().optional(),
+      phone: z.string().optional().describe("Phone with country code (required if no email)"),
+      email: z.string().optional().describe("Email (required if no phone)"),
+      groupId: z.string().describe("Guest group GUID (required) — use list_guest_groups to get valid values"),
+      isUpdateAllEvent: z.boolean().optional().describe("Apply contact changes to all events for this guest"),
+      techaeonCode: z.string().optional().describe("Link a techaeon by its short code"),
+      guestCode: z.string().optional().describe("Custom unique code for this guest"),
+      invitationDesignMappingId: z.string().optional().describe("Create an invitation using this design GUID"),
+      invitationGuestPasses: z.number().optional().describe("Number of passes on the invitation"),
+      invitationIsUnlimited: z.boolean().optional().describe("Unlimited passes on the invitation"),
+    },
+    async ({ eventId, invitationDesignMappingId, invitationGuestPasses, invitationIsUnlimited, ...params }) => {
+      const invitation = invitationDesignMappingId
+        ? { designMappingId: invitationDesignMappingId, guestPasses: invitationGuestPasses, isUnlimited: invitationIsUnlimited }
+        : undefined;
+      return {
+        content: [{ type: "text", text: JSON.stringify(await api.createGuest({ eventId, ...params, invitation }), null, 2) }],
+      };
+    }
+  );
+
+  server.tool(
+    "update_guest",
+    "Update an existing guest's details or invitation. groupId is required.",
+    {
+      id: z.string().describe("Guest GUID"),
+      eventId: z.string().describe("Event GUID"),
+      firstName: z.string().describe("Guest first name (required)"),
+      lastName: z.string().optional(),
+      displayName: z.string().optional(),
+      phone: z.string().optional(),
+      email: z.string().optional(),
+      groupId: z.string().describe("Guest group GUID (required)"),
+      isUpdateAllEvent: z.boolean().optional(),
+      techaeonCode: z.string().optional(),
+      guestCode: z.string().optional(),
+      invitationId: z.string().optional().describe("Invitation GUID to update"),
+      invitationDesignMappingId: z.string().optional(),
+      invitationGuestPasses: z.number().optional(),
+      invitationIsUnlimited: z.boolean().optional(),
+      invitationStatusId: z.string().optional().describe("New invitation status GUID"),
+    },
+    async ({ id, invitationId, invitationDesignMappingId, invitationGuestPasses, invitationIsUnlimited, invitationStatusId, ...params }) => {
+      const invitation =
+        invitationId && invitationDesignMappingId
+          ? { id: invitationId, designMappingId: invitationDesignMappingId, guestPasses: invitationGuestPasses, isUnlimited: invitationIsUnlimited, statusId: invitationStatusId }
+          : undefined;
+      return {
+        content: [{ type: "text", text: JSON.stringify(await api.updateGuest(id, { ...params, invitation }), null, 2) }],
+      };
+    }
+  );
+
+  server.tool(
+    "delete_guest",
+    "Soft-delete a guest. If invitationId is provided, only that invitation is removed; the guest record stays if other invitations remain.",
+    {
+      id: z.string().describe("Guest GUID"),
+      invitationId: z.string().optional().describe("Remove only this invitation instead of the full guest"),
+    },
+    async ({ id, invitationId }) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.deleteGuest(id, invitationId), null, 2) }],
+    })
+  );
+
+  server.tool(
+    "send_invite",
+    "Send or resend invitations to guests in an event. Use sendToAll=true or provide specific guestIds. Updates invitation status to SENT.",
+    {
+      eventId: z.string().describe("Event GUID"),
+      sendToAll: z.boolean().optional().describe("Send to all active guests in the event"),
+      guestIds: z.array(z.string()).optional().describe("Specific guest GUIDs to invite"),
+      inviteMessageTemplate: z.string().optional().describe("Message template to use for the invite"),
+    },
+    async (params) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.sendInvite(params), null, 2) }],
+    })
+  );
+
+  server.tool(
+    "send_message_to_guests",
+    "Send a message to guests in an event via InApp (1), SMS (2), and/or Email (3). Use sendToAll=true or specific guestIds.",
+    {
+      eventId: z.string().describe("Event GUID"),
+      messageBody: z.string().describe("Message text to send"),
+      sendToAll: z.boolean().optional().describe("Send to all active guests (excludes DECLINED)"),
+      guestIds: z.array(z.string()).optional().describe("Specific guest GUIDs"),
+      typeIds: z.array(z.number()).optional().describe("Channel IDs: 1=InApp, 2=SMS, 3=Email"),
+      designMappingId: z.string().optional().describe("Scope to guests with this invitation design"),
+    },
+    async (params) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.sendMessageToGuests(params), null, 2) }],
+    })
+  );
+
+  // ── Contact Tools ──
+
+  server.tool(
+    "list_contacts",
+    "List contacts for an organization with pagination and search. Returns { data: [...], pagination }.",
+    {
+      organizationId: z.string().describe("Organization GUID"),
+      pageNo: z.number().optional(),
+      pageSize: z.number().optional(),
+      searchTerm: z.string().optional(),
+      sortBy: z.string().optional(),
+      sortDirection: z.enum(["asc", "desc"]).optional(),
+      includeAll: z.boolean().optional().describe("Include all contacts (default true)"),
+    },
+    async ({ organizationId, ...params }) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.listContacts(organizationId, params), null, 2) }],
+    })
+  );
+
+  server.tool(
+    "get_contact",
+    "Get full details of a single contact by ID",
+    { id: z.string().describe("Contact GUID") },
+    async ({ id }) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.getContact(id), null, 2) }],
+    })
+  );
+
+  server.tool(
+    "create_contact",
+    "Create a new contact for an organization. firstName and organizationId are required. At least one of phone or email should be provided.",
+    {
+      organizationId: z.string().describe("Organization GUID"),
+      firstName: z.string().describe("Required"),
+      lastName: z.string().optional(),
+      displayName: z.string().optional(),
+      email: z.string().optional(),
+      phone: z.string().optional().describe("Include country code, e.g. +12025550191"),
+      address: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      country: z.string().optional(),
+      zip: z.string().optional(),
+      socialHandle: z.string().optional(),
+    },
+    async (params) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.createContact(params), null, 2) }],
+    })
+  );
+
+  server.tool(
+    "update_contact",
+    "Update an existing contact's details. firstName and organizationId are required.",
+    {
+      id: z.string().describe("Contact GUID"),
+      organizationId: z.string().describe("Organization GUID"),
+      firstName: z.string().describe("Required"),
+      lastName: z.string().optional(),
+      displayName: z.string().optional(),
+      email: z.string().optional(),
+      phone: z.string().optional(),
+      userId: z.string().optional().describe("Link to a platform user account GUID"),
+      address: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      country: z.string().optional(),
+      zip: z.string().optional(),
+      socialHandle: z.string().optional(),
+    },
+    async ({ id, ...params }) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.updateContact(id, params), null, 2) }],
+    })
+  );
+
+  server.tool(
+    "delete_contact",
+    "Soft-delete a contact (marks inactive)",
+    { id: z.string().describe("Contact GUID") },
+    async ({ id }) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.deleteContact(id), null, 2) }],
+    })
+  );
+
+  server.tool(
+    "send_message_to_contacts",
+    "Send a message to specific contacts via InApp (1), SMS (2), and/or Email (3).",
+    {
+      organizationId: z.string().describe("Organization GUID"),
+      messageBody: z.string().describe("Message text"),
+      contactIds: z.array(z.string()).describe("Contact GUIDs to message"),
+      typeIds: z.array(z.number()).optional().describe("Channel IDs: 1=InApp, 2=SMS, 3=Email"),
+    },
+    async (params) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.sendMessageToContacts(params), null, 2) }],
+    })
+  );
+
+  server.tool(
+    "upload_contacts",
+    "Bulk create or update contacts from a list. Matches existing contacts by phone/email and upserts. Returns counts of new/updated/error records.",
+    {
+      organizationId: z.string().describe("Organization GUID"),
+      contacts: z.array(
+        z.object({
+          firstName: z.string(),
+          lastName: z.string().optional(),
+          phone: z.string().optional(),
+          email: z.string().optional(),
+          state: z.string().optional(),
+          country: z.string().optional(),
+        })
+      ).describe("List of contacts to import"),
+    },
+    async (params) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.uploadContacts(params), null, 2) }],
+    })
+  );
+
+  server.tool(
+    "list_guest_groups",
+    "Get all guest groups available for an organization (org-specific + system defaults). Use the returned IDs when creating or updating guests.",
+    { organizationId: z.string().describe("Organization GUID") },
+    async ({ organizationId }) => ({
+      content: [{ type: "text", text: JSON.stringify(await api.listGuestGroups(organizationId), null, 2) }],
+    })
+  );
+
   return server;
 }
