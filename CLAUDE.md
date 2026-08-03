@@ -9,7 +9,7 @@ MCP server for the AeonPass platform API. Exposes Techaeon and Group CRUD operat
 - Runs over stdio transport
 
 ## API
-All tools call the AeonPass gateway at `https://apv2-gatewayapp-prod-westus3.azurewebsites.net/api/techaeon/public/...` using the `X-API-KEY` header.
+All tools call the AeonPass gateway at `https://apv2-gatewayapp-prod-westus3.azurewebsites.net/api/portal/techaeon/...` using the `X-API-KEY` header. List endpoints return `{ data: [...], pagination: { totalCount, page, pageSize, totalPages } }`.
 
 ### Tools
 | Tool | Description |

@@ -52,7 +52,7 @@ async function request(
 // ── Techaeons ──
 
 export async function getTechaeon(id: string) {
-  return request("GET", `/api/techaeon/public/${id}`);
+  return request("GET", `/api/portal/techaeon/${id}`);
 }
 
 export async function createTechaeon(params: {
@@ -66,19 +66,19 @@ export async function createTechaeon(params: {
     phone?: string;
   };
 }) {
-  return request("POST", "/api/techaeon/public", params);
+  return request("POST", "/api/portal/techaeon", params);
 }
 
 export async function deleteTechaeon(id: string) {
-  return request("DELETE", `/api/techaeon/public/${id}`);
+  return request("DELETE", `/api/portal/techaeon/${id}`);
 }
 
 export async function updateTechaeonStatus(id: string, statusCode: string) {
-  return request("PUT", `/api/techaeon/public/${id}/status`, { statusCode });
+  return request("PUT", `/api/portal/techaeon/${id}/status`, { statusCode });
 }
 
 export async function updateTechaeonRedirect(id: string, redirectUrl: string | null) {
-  return request("PUT", `/api/techaeon/public/${id}/redirectUrl`, { redirectUrl });
+  return request("PUT", `/api/portal/techaeon/${id}/redirectUrl`, { redirectUrl });
 }
 
 export async function listTechaeons(params: {
@@ -108,7 +108,7 @@ export async function listTechaeons(params: {
   if (params.statusId) query.statusId = params.statusId;
   if (params.privilegeId) query.privilegeId = params.privilegeId;
   if (params.privilegeCode) query.privilegeCode = params.privilegeCode;
-  return request("GET", "/api/techaeon/public/list", undefined, query);
+  return request("GET", "/api/portal/techaeon/list", undefined, query);
 }
 
 // ── Groups ──
@@ -120,7 +120,7 @@ export async function createGroup(params: {
   redirectUrl?: string;
   isTechaeonCodeEnabled?: boolean;
 }) {
-  return request("POST", "/api/techaeon/public/group", params);
+  return request("POST", "/api/portal/techaeon/group", params);
 }
 
 export async function updateGroup(
@@ -132,7 +132,7 @@ export async function updateGroup(
     isTechaeonCodeEnabled?: boolean;
   }
 ) {
-  return request("PUT", `/api/techaeon/public/group/${id}`, params);
+  return request("PUT", `/api/portal/techaeon/group/${id}`, params);
 }
 
 export async function listGroups(params: {
@@ -148,5 +148,5 @@ export async function listGroups(params: {
   if (params.sortBy) query.sortBy = params.sortBy;
   if (params.sortDirection) query.sortDirection = params.sortDirection;
   if (params.searchTerm) query.searchTerm = params.searchTerm;
-  return request("GET", "/api/techaeon/public/group/list", undefined, query);
+  return request("GET", "/api/portal/techaeon/group/list", undefined, query);
 }

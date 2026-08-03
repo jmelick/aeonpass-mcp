@@ -21,7 +21,7 @@ export function createServer(): McpServer {
 
   server.tool(
     "list_techaeons",
-    "List techaeons with pagination, filtering by group/status/search, and sorting. Returns holder details for each.",
+    "List techaeons with pagination, filtering by group/status/search, and sorting. Returns { data: [...], pagination: { totalCount, page, pageSize, totalPages } }.",
     {
       groupId: z.string().optional().describe("Filter to a specific group"),
       pageNo: z.number().optional().describe("Page number (1-based)"),
@@ -107,7 +107,7 @@ export function createServer(): McpServer {
 
   server.tool(
     "delete_techaeon",
-    "Permanently delete a techaeon. This is irreversible.",
+    "Soft-delete a techaeon (marks it inactive). Returns 204 No Content on success.",
     { id: z.string().describe("Techaeon GUID") },
     async ({ id }) => ({
       content: [{ type: "text", text: JSON.stringify(await api.deleteTechaeon(id), null, 2) }],
@@ -118,7 +118,7 @@ export function createServer(): McpServer {
 
   server.tool(
     "list_groups",
-    "List techaeon groups with pagination, sorting, and search",
+    "List techaeon groups with pagination, sorting, and search. Returns { data: [...], pagination: { totalCount, page, pageSize, totalPages } }.",
     {
       pageNo: z.number().optional().describe("Page number (1-based)"),
       pageSize: z.number().optional().describe("Results per page"),
