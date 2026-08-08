@@ -10,12 +10,14 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "dev:http": "tsx src/http.ts",
+    "dev:http": "tsx src/node.ts",
     "start": "node dist/index.js",
-    "serve": "node dist/http.js"
+    "serve": "node dist/node.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1"
+    "@hono/node-server": "^2.1.0",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "hono": "^4.13.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

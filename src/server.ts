@@ -1,8 +1,13 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import * as api from "./api.js";
+import type { AeonPassClient } from "./api.js";
 
-export function createServer(): McpServer {
+/**
+ * Registers all AeonPass tools against a client. The client carries the API
+ * key, so each transport decides where that key comes from — env for stdio,
+ * request header for HTTP.
+ */
+export function createServer(client: AeonPassClient): McpServer {
   const server = new McpServer({
     name: "aeonpass",
     version: "1.0.0",
@@ -15,7 +20,7 @@ export function createServer(): McpServer {
     "Get full details of a single techaeon by ID, including status, holder info, group, and redirect URL",
     { id: z.string().describe("Techaeon GUID") },
     async ({ id }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.getTechaeon(id), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.getTechaeon(id), null, 2) }],
     })
   );
 
@@ -37,7 +42,7 @@ export function createServer(): McpServer {
       privilegeCode: z.string().optional().describe("Filter by privilege code (e.g. ENTRY)"),
     },
     async (params) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.listTechaeons(params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.listTechaeons(params), null, 2) }],
     })
   );
 
@@ -58,7 +63,7 @@ export function createServer(): McpServer {
         {
           type: "text",
           text: JSON.stringify(
-            await api.createTechaeon({
+            await client.createTechaeon({
               redirectUrl,
               eventId,
               groupId,
@@ -83,7 +88,7 @@ export function createServer(): McpServer {
     },
     async ({ id, statusCode }) => ({
       content: [
-        { type: "text", text: JSON.stringify(await api.updateTechaeonStatus(id, statusCode), null, 2) },
+        { type: "text", text: JSON.stringify(await client.updateTechaeonStatus(id, statusCode), null, 2) },
       ],
     })
   );
@@ -99,7 +104,7 @@ export function createServer(): McpServer {
       content: [
         {
           type: "text",
-          text: JSON.stringify(await api.updateTechaeonRedirect(id, redirectUrl), null, 2),
+          text: JSON.stringify(await client.updateTechaeonRedirect(id, redirectUrl), null, 2),
         },
       ],
     })
@@ -110,7 +115,7 @@ export function createServer(): McpServer {
     "Soft-delete a techaeon (marks it inactive). Returns 204 No Content on success.",
     { id: z.string().describe("Techaeon GUID") },
     async ({ id }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.deleteTechaeon(id), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.deleteTechaeon(id), null, 2) }],
     })
   );
 
@@ -127,7 +132,7 @@ export function createServer(): McpServer {
       searchTerm: z.string().optional().describe("Search group names"),
     },
     async (params) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.listGroups(params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.listGroups(params), null, 2) }],
     })
   );
 
@@ -145,7 +150,7 @@ export function createServer(): McpServer {
         .describe("Generate unique short codes for QR/manual entry"),
     },
     async (params) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.createGroup(params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.createGroup(params), null, 2) }],
     })
   );
 
@@ -160,7 +165,7 @@ export function createServer(): McpServer {
       isTechaeonCodeEnabled: z.boolean().optional().describe("Toggle short code generation"),
     },
     async ({ id, ...params }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.updateGroup(id, params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.updateGroup(id, params), null, 2) }],
     })
   );
 
@@ -171,7 +176,7 @@ export function createServer(): McpServer {
     "Get public details of an event by ID: title, dates, status, type, venue/design reference IDs, ticketing status",
     { id: z.string().describe("Event GUID") },
     async ({ id }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.getEvent(id), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.getEvent(id), null, 2) }],
     })
   );
 
@@ -191,7 +196,7 @@ export function createServer(): McpServer {
       sortDirection: z.enum(["asc", "desc"]).optional(),
     },
     async ({ eventId, ...params }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.listGuests(eventId, params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.listGuests(eventId, params), null, 2) }],
     })
   );
 
@@ -218,7 +223,7 @@ export function createServer(): McpServer {
         ? { designMappingId: invitationDesignMappingId, guestPasses: invitationGuestPasses, isUnlimited: invitationIsUnlimited }
         : undefined;
       return {
-        content: [{ type: "text", text: JSON.stringify(await api.createGuest({ eventId, ...params, invitation }), null, 2) }],
+        content: [{ type: "text", text: JSON.stringify(await client.createGuest({ eventId, ...params, invitation }), null, 2) }],
       };
     }
   );
@@ -250,7 +255,7 @@ export function createServer(): McpServer {
           ? { id: invitationId, designMappingId: invitationDesignMappingId, guestPasses: invitationGuestPasses, isUnlimited: invitationIsUnlimited, statusId: invitationStatusId }
           : undefined;
       return {
-        content: [{ type: "text", text: JSON.stringify(await api.updateGuest(id, { ...params, invitation }), null, 2) }],
+        content: [{ type: "text", text: JSON.stringify(await client.updateGuest(id, { ...params, invitation }), null, 2) }],
       };
     }
   );
@@ -263,7 +268,7 @@ export function createServer(): McpServer {
       invitationId: z.string().optional().describe("Remove only this invitation instead of the full guest"),
     },
     async ({ id, invitationId }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.deleteGuest(id, invitationId), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.deleteGuest(id, invitationId), null, 2) }],
     })
   );
 
@@ -277,7 +282,7 @@ export function createServer(): McpServer {
       inviteMessageTemplate: z.string().optional().describe("Message template to use for the invite"),
     },
     async (params) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.sendInvite(params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.sendInvite(params), null, 2) }],
     })
   );
 
@@ -293,7 +298,7 @@ export function createServer(): McpServer {
       designMappingId: z.string().optional().describe("Scope to guests with this invitation design"),
     },
     async (params) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.sendMessageToGuests(params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.sendMessageToGuests(params), null, 2) }],
     })
   );
 
@@ -312,7 +317,7 @@ export function createServer(): McpServer {
       includeAll: z.boolean().optional().describe("Include all contacts (default true)"),
     },
     async ({ organizationId, ...params }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.listContacts(organizationId, params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.listContacts(organizationId, params), null, 2) }],
     })
   );
 
@@ -321,7 +326,7 @@ export function createServer(): McpServer {
     "Get full details of a single contact by ID",
     { id: z.string().describe("Contact GUID") },
     async ({ id }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.getContact(id), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.getContact(id), null, 2) }],
     })
   );
 
@@ -343,7 +348,7 @@ export function createServer(): McpServer {
       socialHandle: z.string().optional(),
     },
     async (params) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.createContact(params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.createContact(params), null, 2) }],
     })
   );
 
@@ -367,7 +372,7 @@ export function createServer(): McpServer {
       socialHandle: z.string().optional(),
     },
     async ({ id, ...params }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.updateContact(id, params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.updateContact(id, params), null, 2) }],
     })
   );
 
@@ -376,7 +381,7 @@ export function createServer(): McpServer {
     "Soft-delete a contact (marks inactive)",
     { id: z.string().describe("Contact GUID") },
     async ({ id }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.deleteContact(id), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.deleteContact(id), null, 2) }],
     })
   );
 
@@ -390,7 +395,7 @@ export function createServer(): McpServer {
       typeIds: z.array(z.number()).optional().describe("Channel IDs: 1=InApp, 2=SMS, 3=Email"),
     },
     async (params) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.sendMessageToContacts(params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.sendMessageToContacts(params), null, 2) }],
     })
   );
 
@@ -411,7 +416,7 @@ export function createServer(): McpServer {
       ).describe("List of contacts to import"),
     },
     async (params) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.uploadContacts(params), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.uploadContacts(params), null, 2) }],
     })
   );
 
@@ -420,7 +425,7 @@ export function createServer(): McpServer {
     "Get all guest groups available for an organization (org-specific + system defaults). Use the returned IDs when creating or updating guests.",
     { organizationId: z.string().describe("Organization GUID") },
     async ({ organizationId }) => ({
-      content: [{ type: "text", text: JSON.stringify(await api.listGuestGroups(organizationId), null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(await client.listGuestGroups(organizationId), null, 2) }],
     })
   );
 

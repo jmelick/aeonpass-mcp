@@ -70,7 +70,36 @@ npx cloudflared tunnel --url http://localhost:47821
 
 Then: Claude.ai → Settings → Integrations → Add custom integration → paste the `https://` tunnel URL.
 
-> The tunnel URL changes each time you restart. For a stable URL you'd need a persistent tunnel or hosted deployment.
+> The tunnel URL changes each time you restart. For a stable URL, deploy it — see below.
+
+## Deploying
+
+The HTTP app is Fetch-native, so the same code runs on Node, Vercel, Cloudflare
+Workers, or a container. Only the entrypoint differs.
+
+**Deployed instances hold no API key.** Each caller sends their own as an
+`X-API-KEY` header, which the server forwards to AeonPass. That means calls are
+attributable to a person, keys are revocable one at a time, and compromising the
+deployment yields no credential. Do **not** set `AEONPASS_API_KEY` in a hosted
+environment — that would turn pass-through back into a shared server-held key.
+
+| Target | Entrypoint | Notes |
+|--------|-----------|-------|
+| Vercel | `api/index.ts` | `vercel.json` rewrites all routes to `/api` |
+| Container (Azure, Fly, Render) | `dist/node.js` | `npm run serve` with no `AEONPASS_API_KEY` set |
+| Cloudflare Workers | ~3-line entry | `export default { fetch: createApp().fetch }` |
+
+Connecting a client to a deployed instance:
+
+```bash
+claude mcp add --transport http \
+  --header "X-API-KEY: YOUR_API_KEY" \
+  --scope user \
+  aeonpass https://your-host/mcp
+```
+
+> ⚠️ The caller's key is on every request. Don't enable header capture in any
+> log drain for this service.
 
 ## Tools
 
@@ -83,7 +112,7 @@ Then: Claude.ai → Settings → Integrations → Add custom integration → pas
 | `create_techaeon` | Create a techaeon and assign to a holder |
 | `update_techaeon_status` | Change lifecycle status |
 | `update_techaeon_redirect` | Set or clear redirect URL |
-| `delete_techaeon` | Permanently delete a techaeon |
+| `delete_techaeon` | Soft-delete a techaeon |
 
 ### Groups
 
@@ -92,6 +121,35 @@ Then: Claude.ai → Settings → Integrations → Add custom integration → pas
 | `list_groups` | List and search techaeon groups |
 | `create_group` | Create a group and bulk-generate techaeons |
 | `update_group` | Update group configuration |
+
+### Events & Guests
+
+| Tool | Description |
+|------|-------------|
+| `get_event` | Get event details by ID |
+| `list_guests` | List, search, and filter guests for an event (paginated) |
+| `create_guest` | Add a guest to an event, optionally issuing an invitation |
+| `update_guest` | Update guest details or invitation |
+| `delete_guest` | Soft-delete a guest, or remove a single invitation |
+| `send_invite` | Send or resend invitations (sets status to SENT) |
+| `send_message_to_guests` | Message guests via InApp / SMS / Email |
+| `list_guest_groups` | List valid guest group IDs for an organization |
+
+### Contacts
+
+| Tool | Description |
+|------|-------------|
+| `list_contacts` | List and search organization contacts (paginated) |
+| `get_contact` | Get a single contact by ID |
+| `create_contact` | Create a new contact |
+| `update_contact` | Update contact details |
+| `delete_contact` | Soft-delete a contact |
+| `send_message_to_contacts` | Message contacts via InApp / SMS / Email |
+| `upload_contacts` | Bulk upsert contacts from a list |
+
+> `send_invite`, `send_message_to_guests`, and `send_message_to_contacts` reach
+> real people over SMS and email, and `sendToAll` is not scoped. Treat them as
+> destructive.
 
 ### Techaeon Status Codes
 
@@ -122,3 +180,19 @@ npm run dev:http    # HTTP mode with tsx (hot reload)
 npm run start       # stdio mode (compiled)
 npm run serve       # HTTP mode (compiled)
 ```
+
+Tools are defined once in `src/server.ts` and shared by every transport. The API
+key is a parameter rather than a module-level env read, so each entrypoint
+decides where it comes from:
+
+```
+src/api.ts     createClient(apiKey) → the 24 API calls, bound to that key
+src/server.ts  createServer(client) → registers the tools
+src/app.ts     Hono app; reads X-API-KEY per request
+src/index.ts   stdio      → key from AEONPASS_API_KEY
+src/node.ts    Node HTTP  → header, falling back to env for local runs
+api/index.ts   Vercel     → header only, no fallback
+```
+
+To add a tool: add the call to `createClient` in `api.ts`, then register it in
+`server.ts`. Every transport picks it up.

@@ -6,7 +6,28 @@ MCP server for the AeonPass platform API. Exposes Techaeon and Group CRUD operat
 ## Tech stack
 - TypeScript, Node 22+
 - `@modelcontextprotocol/sdk` for MCP server
-- Runs over stdio transport
+- Hono for the HTTP app (Fetch-native, so it runs unchanged on Node, Vercel, Workers, or a container)
+
+## Architecture
+
+Tools are defined once and shared by every transport. The API key is a
+parameter, not a module-level env read, so each transport decides where it
+comes from.
+
+```
+src/api.ts     createClient(apiKey) → all 24 API calls bound to that key
+src/server.ts  createServer(client) → registers the tools
+src/app.ts     Hono app; reads X-API-KEY per request
+src/index.ts   stdio      → key from AEONPASS_API_KEY        (Claude Code / desktop)
+src/node.ts    Node HTTP  → header, falls back to env locally (npm run serve)
+api/index.ts   Vercel     → header only, no fallback
+```
+
+**Key handling.** `createApp({ fallbackApiKey })` is the only way to get an
+env-var key over HTTP, and it exists for local single-user runs. Hosted
+deployments must not set `AEONPASS_API_KEY` — callers supply their own key as
+`X-API-KEY`, so the server holds no credential and each call is attributable to
+one person's key. Never add request logging that captures headers.
 
 ## API
 All tools call the AeonPass gateway at `https://apv2-gatewayapp-prod-westus3.azurewebsites.net/api/portal/techaeon/...` using the `X-API-KEY` header. List endpoints return `{ data: [...], pagination: { totalCount, page, pageSize, totalPages } }`.
