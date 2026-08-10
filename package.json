@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "MCP server for the AeonPass platform API",
   "type": "module",
-  "main": "dist/index.js",
   "bin": {
     "aeonpass-mcp": "dist/index.js"
   },
