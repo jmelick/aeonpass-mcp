@@ -55,3 +55,12 @@ export function createApp(options: AppOptions = {}) {
 
   return app;
 }
+
+// Default export in the `{ fetch }` shape used by Cloudflare Workers, Deno, and
+// Bun, so this module is directly runnable there.
+//
+// It also matters on Vercel: the platform resolves this module as a root-level
+// function entrypoint, and without a valid default export every request to `/`
+// died with FUNCTION_INVOCATION_FAILED. No fallback key here — a hosted entry
+// must require the caller's own X-API-KEY.
+export default { fetch: createApp().fetch };
