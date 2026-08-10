@@ -32,7 +32,7 @@ export function createApp(options: AppOptions = {}) {
     const apiKey = c.req.header("x-api-key") ?? options.fallbackApiKey;
     if (!apiKey) {
       return Response.json(
-        { error: "Missing X-API-KEY header. Supply your own AeonPass API key." },
+        { error: "Missing X-API-KEY header. Supply your own Aeon Pass API key." },
         { status: 401 }
       );
     }

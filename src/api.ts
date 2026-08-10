@@ -1,7 +1,7 @@
 const BASE_URL = "https://apv2-gatewayapp-prod-westus3.azurewebsites.net";
 
 /**
- * Builds an AeonPass API client bound to a single API key.
+ * Builds an Aeon Pass API client bound to a single API key.
  *
  * The key is a parameter rather than a module-level env read so that a hosted
  * deployment can pass the caller's own key per request — the server itself
@@ -9,7 +9,7 @@ const BASE_URL = "https://apv2-gatewayapp-prod-westus3.azurewebsites.net";
  */
 export function createClient(apiKey: string) {
   if (!apiKey) {
-    throw new Error("No AeonPass API key provided");
+    throw new Error("No Aeon Pass API key provided");
   }
 
   async function request(

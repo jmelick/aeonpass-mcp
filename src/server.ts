@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { AeonPassClient } from "./api.js";
 
 /**
- * Registers all AeonPass tools against a client. The client carries the API
+ * Registers all Aeon Pass tools against a client. The client carries the API
  * key, so each transport decides where that key comes from — env for stdio,
  * request header for HTTP.
  */

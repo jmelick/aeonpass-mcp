@@ -1,12 +1,12 @@
-# AeonPass MCP Server
+# Aeon Pass MCP Server
 
-MCP server for the [AeonPass](https://aeonpass-dev-portal.vercel.app) platform API. Exposes techaeon, event, guest, and contact operations as tools for Claude.
+MCP server for the [Aeon Pass](https://aeonpass-dev-portal.vercel.app) platform API. Exposes techaeon, event, guest, and contact operations as tools for Claude.
 
 **Live at [mcp.aeonpass.com](https://mcp.aeonpass.com)** — nothing to install.
 
 ## Quick start
 
-You need your own AeonPass API key. Ask your AeonPass administrator; keys are
+You need your own Aeon Pass API key. Ask your Aeon Pass administrator; keys are
 issued per person, so don't share one.
 
 ```bash
@@ -45,7 +45,7 @@ credential is shared org-wide rather than per user.
 
 ## Your key never leaves your client
 
-The hosted server holds **no** AeonPass credential. Every request carries the
+The hosted server holds **no** Aeon Pass credential. Every request carries the
 caller's own key, which the server forwards. So calls are attributable to a
 person, keys are revocable one at a time, and compromising the deployment yields
 no credential.

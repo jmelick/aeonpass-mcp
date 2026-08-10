@@ -1,7 +1,7 @@
 # CLAUDE.md — aeonpass-mcp
 
 ## What this is
-MCP server for the AeonPass platform API. Exposes Techaeon and Group CRUD operations as MCP tools so Claude Code can query and manage techaeons directly.
+MCP server for the Aeon Pass platform API. Exposes Techaeon and Group CRUD operations as MCP tools so Claude Code can query and manage techaeons directly.
 
 Deployed at **https://mcp.aeonpass.com/mcp** (Vercel, fronted by Cloudflare DNS
 in DNS-only mode — the proxy would buffer this transport's SSE stream). Callers
@@ -34,7 +34,7 @@ deployments must not set `AEONPASS_API_KEY` — callers supply their own key as
 one person's key. Never add request logging that captures headers.
 
 ## API
-All tools call the AeonPass gateway at `https://apv2-gatewayapp-prod-westus3.azurewebsites.net/api/portal/techaeon/...` using the `X-API-KEY` header. List endpoints return `{ data: [...], pagination: { totalCount, page, pageSize, totalPages } }`.
+All tools call the Aeon Pass gateway at `https://apv2-gatewayapp-prod-westus3.azurewebsites.net/api/portal/techaeon/...` using the `X-API-KEY` header. List endpoints return `{ data: [...], pagination: { totalCount, page, pageSize, totalPages } }`.
 
 ### Tools
 

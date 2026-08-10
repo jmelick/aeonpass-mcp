@@ -15,7 +15,7 @@ const fallbackApiKey = process.env.AEONPASS_API_KEY;
 const app = createApp({ fallbackApiKey });
 
 serve({ fetch: app.fetch, port: PORT }, (info) => {
-  console.log(`AeonPass MCP listening on http://localhost:${info.port}`);
+  console.log(`Aeon Pass MCP listening on http://localhost:${info.port}`);
   console.log(`  MCP endpoint: http://localhost:${info.port}/mcp`);
   console.log(`  Health:       http://localhost:${info.port}/health`);
   console.log(

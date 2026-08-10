@@ -1,7 +1,7 @@
 {
   "name": "aeonpass-mcp",
   "version": "1.0.0",
-  "description": "MCP server for the AeonPass platform API",
+  "description": "MCP server for the Aeon Pass platform API",
   "type": "module",
   "bin": {
     "aeonpass-mcp": "dist/index.js"

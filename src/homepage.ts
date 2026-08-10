@@ -8,7 +8,7 @@ export function homepage(origin: string): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AeonPass MCP</title>
+<title>Aeon Pass MCP</title>
 <style>
   :root {
     --bg: #fbfbfa; --fg: #1a1a19; --muted: #6b6b68;
@@ -69,8 +69,8 @@ export function homepage(origin: string): string {
 </head>
 <body>
 <main>
-  <h1>AeonPass MCP</h1>
-  <p class="sub">A Model Context Protocol server for the AeonPass platform API.</p>
+  <h1>Aeon Pass MCP</h1>
+  <p class="sub">A Model Context Protocol server for the Aeon Pass platform API.</p>
 
   <div class="card">
     <div class="row"><span><span class="dot"></span>Status</span><span>Operational</span></div>
@@ -86,14 +86,14 @@ export function homepage(origin: string): string {
   aeonpass ${origin}/mcp</code></pre>
 
   <p class="note">
-    Replace <code>YOUR_KEY</code> with your own AeonPass API key before running this.
+    Replace <code>YOUR_KEY</code> with your own Aeon Pass API key before running this.
     This server stores no credentials &mdash; every request is authenticated with the
     key you supply, so your calls are attributable to you and revocable on their own.
   </p>
 
   <h2>Getting a key</h2>
   <p style="margin:0;color:var(--muted)">
-    Ask your AeonPass administrator for a key scoped to your account. Keys are issued
+    Ask your Aeon Pass administrator for a key scoped to your account. Keys are issued
     per person &mdash; please don't share one.
   </p>
 
