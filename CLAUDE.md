@@ -3,6 +3,10 @@
 ## What this is
 MCP server for the AeonPass platform API. Exposes Techaeon and Group CRUD operations as MCP tools so Claude Code can query and manage techaeons directly.
 
+Deployed at **https://mcp.aeonpass.com/mcp** (Vercel, fronted by Cloudflare DNS
+in DNS-only mode — the proxy would buffer this transport's SSE stream). Callers
+supply their own key; the deployment holds none.
+
 ## Tech stack
 - TypeScript, Node 22+
 - `@modelcontextprotocol/sdk` for MCP server
