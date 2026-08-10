@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "echo 'No build step: Vercel compiles api/index.ts and traces into src/ itself.'",
   "rewrites": [
     { "source": "/", "destination": "/api" },
     { "source": "/(.*)", "destination": "/api" }
