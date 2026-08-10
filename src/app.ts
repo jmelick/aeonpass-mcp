@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createClient } from "./api.js";
 import { createServer } from "./server.js";
+import { homepage } from "./homepage.js";
 
 export interface AppOptions {
   /**
@@ -46,7 +47,11 @@ export function createApp(options: AppOptions = {}) {
   };
 
   app.all("/mcp", handleMcp);
-  app.all("/", handleMcp); // back-compat: the old server answered on the root
+
+  // A browser hitting the root should learn what this is, not get a protocol
+  // error. POST / still speaks MCP so older bare-URL configs keep working.
+  app.get("/", (c) => c.html(homepage(new URL(c.req.url).origin)));
+  app.post("/", handleMcp);
 
   return app;
 }
