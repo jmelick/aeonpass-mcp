@@ -1,5 +1,83 @@
 const BASE_URL = "https://apv2-gatewayapp-prod-westus3.azurewebsites.net";
 
+/** One API call, recorded without credentials or personal data. */
+export interface CallLog {
+  ts: string;
+  /** First 8 hex of SHA-256(apiKey). A stable pseudonym — never the key. */
+  caller: string;
+  method: string;
+  ok: boolean;
+  ms: number;
+  /** HTTP status, on failure only. */
+  status?: number;
+  /** Argument *shape* for sensitive calls. Never message bodies or PII. */
+  meta?: Record<string, unknown>;
+}
+
+/**
+ * Default sink: one JSON object per line on **stderr**.
+ *
+ * stderr matters. The stdio transport owns stdout for JSON-RPC frames, so
+ * anything written there corrupts the protocol. Vercel captures stderr as
+ * runtime logs either way.
+ */
+export function logToStderr(entry: CallLog): void {
+  console.error(JSON.stringify({ src: "aeonpass-mcp", ...entry }));
+}
+
+export interface ClientOptions {
+  /** Receives one record per call. Pass `() => {}` to disable. */
+  onCall?: (entry: CallLog) => void;
+}
+
+/**
+ * Records the *shape* of arguments for calls where that matters after the fact
+ * — bulk sends, deletes, and the org-scoped reads. Deliberately omits message
+ * bodies, recipient lists, and contact records: those are the PII, and logs are
+ * not the place for them.
+ *
+ * organizationId is included on the org-scoped calls because the API currently
+ * trusts that argument rather than deriving it from the key, so this is the
+ * only signal that would show a key reaching another org's data.
+ */
+function callMeta(method: string, args: unknown[]): Record<string, unknown> | undefined {
+  const a = args[0] as any;
+  const b = args[1] as any;
+  switch (method) {
+    case "sendInvite":
+      return { eventId: a?.eventId, sendToAll: !!a?.sendToAll, guests: a?.guestIds?.length ?? 0 };
+    case "sendMessageToGuests":
+      return {
+        eventId: a?.eventId,
+        sendToAll: !!a?.sendToAll,
+        guests: a?.guestIds?.length ?? 0,
+        channels: a?.typeIds,
+        bodyChars: a?.messageBody?.length ?? 0,
+      };
+    case "sendMessageToContacts":
+      return {
+        organizationId: a?.organizationId,
+        contacts: a?.contactIds?.length ?? 0,
+        channels: a?.typeIds,
+        bodyChars: a?.messageBody?.length ?? 0,
+      };
+    case "uploadContacts":
+      return { organizationId: a?.organizationId, rows: a?.contacts?.length ?? 0 };
+    case "createGroup":
+      return { generated: a?.noOfTechaeons };
+    case "deleteTechaeon":
+    case "deleteContact":
+      return { id: a };
+    case "deleteGuest":
+      return { id: a, invitationId: b };
+    case "listContacts":
+    case "listGuestGroups":
+      return { organizationId: a };
+    default:
+      return undefined;
+  }
+}
+
 /**
  * Builds an Aeon Pass API client bound to a single API key.
  *
@@ -7,10 +85,24 @@ const BASE_URL = "https://apv2-gatewayapp-prod-westus3.azurewebsites.net";
  * deployment can pass the caller's own key per request — the server itself
  * never holds a credential. The stdio entrypoint passes the env var.
  */
-export function createClient(apiKey: string) {
+export function createClient(apiKey: string, options: ClientOptions = {}) {
   if (!apiKey) {
     throw new Error("No Aeon Pass API key provided");
   }
+
+  const onCall = options.onCall ?? logToStderr;
+
+  // Derived lazily and memoised. Uses Web Crypto rather than node:crypto so the
+  // client still runs on Workers, Deno, and Bun.
+  let callerId: Promise<string> | undefined;
+  const caller = () =>
+    (callerId ??= crypto.subtle
+      .digest("SHA-256", new TextEncoder().encode(apiKey))
+      .then((buf) =>
+        Array.from(new Uint8Array(buf).slice(0, 4))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("")
+      ));
 
   async function request(
     method: string,
@@ -83,7 +175,7 @@ export function createClient(apiKey: string) {
     }
   }
 
-  return {
+  const methods = {
     // ── Techaeons ──
 
     getTechaeon(id: string) {
@@ -377,6 +469,44 @@ export function createClient(apiKey: string) {
       return request("GET", `/api/portal/guest-group/${organizationId}/list`);
     },
   };
+
+  // Wrap every method once rather than at 24 call sites. Failures are recorded
+  // and rethrown — logging must never change behaviour.
+  const instrumented = Object.fromEntries(
+    Object.entries(methods).map(([name, fn]) => [
+      name,
+      async (...args: unknown[]) => {
+        const started = Date.now();
+        try {
+          const result = await (fn as (...a: unknown[]) => Promise<unknown>)(...args);
+          onCall({
+            ts: new Date().toISOString(),
+            caller: await caller(),
+            method: name,
+            ok: true,
+            ms: Date.now() - started,
+            meta: callMeta(name, args),
+          });
+          return result;
+        } catch (err) {
+          // Status only — the API's error body can echo back request content.
+          const status = Number(/^API (\d+)/.exec(String((err as Error)?.message))?.[1]) || undefined;
+          onCall({
+            ts: new Date().toISOString(),
+            caller: await caller(),
+            method: name,
+            ok: false,
+            ms: Date.now() - started,
+            status,
+            meta: callMeta(name, args),
+          });
+          throw err;
+        }
+      },
+    ])
+  ) as typeof methods;
+
+  return instrumented;
 }
 
 export type AeonPassClient = ReturnType<typeof createClient>;

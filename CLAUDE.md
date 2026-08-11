@@ -33,6 +33,35 @@ deployments must not set `AEONPASS_API_KEY` — callers supply their own key as
 `X-API-KEY`, so the server holds no credential and each call is attributable to
 one person's key. Never add request logging that captures headers.
 
+## Logging
+
+`createClient` wraps all 24 methods and emits one JSON line per call to
+**stderr** — stdout belongs to the stdio transport's JSON-RPC frames, so writing
+there corrupts the protocol.
+
+```json
+{"src":"aeonpass-mcp","ts":"…","caller":"c4bc6c74","method":"listTechaeons","ok":true,"ms":953}
+```
+
+`caller` is the first 8 hex of SHA-256 of the key — a stable pseudonym, never
+the key. Different keys produce different values, which is what makes calls
+attributable. Web Crypto, not `node:crypto`, so it still runs on Workers/Deno.
+
+**What is deliberately not logged:** the key, arguments in general, response
+bodies, and API error text (which can echo request content back). Only the
+status code is kept on failure.
+
+`callMeta` in `api.ts` records argument *shape* for calls where it matters after
+the fact — bulk sends, deletes, org-scoped reads. It logs counts and IDs, never
+message bodies, recipients, or contact records. `organizationId` is included on
+the org-scoped calls specifically because the API trusts that argument instead
+of deriving it from the key; that field is the only signal that would reveal a
+key reaching another org's data.
+
+Pass `createClient(key, { onCall })` to redirect or disable (`onCall: () => {}`).
+Note Vercel runtime logs are short-retention — a log drain is required for
+anything meant to serve as an audit trail.
+
 ## API
 All tools call the Aeon Pass gateway at `https://apv2-gatewayapp-prod-westus3.azurewebsites.net/api/portal/techaeon/...` using the `X-API-KEY` header. List endpoints return `{ data: [...], pagination: { totalCount, page, pageSize, totalPages } }`.
 

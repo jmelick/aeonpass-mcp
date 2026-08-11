@@ -53,6 +53,31 @@ no credential.
 The flip side: your key is on every request. Don't enable request-header capture
 in any log drain pointed at this service.
 
+## Logging
+
+One JSON line per API call, on stderr:
+
+```json
+{"src":"aeonpass-mcp","ts":"…","caller":"c4bc6c74","method":"listTechaeons","ok":true,"ms":953}
+```
+
+`caller` is a fingerprint — the first 8 hex of SHA-256 of your key, never the
+key itself. It's stable per key, so calls are attributable to a person without
+the log ever holding a credential.
+
+Not logged: the key, arguments in general, response bodies, or API error text.
+Sensitive calls (bulk sends, deletes, org-scoped reads) additionally record
+argument *shape* — counts and IDs, never message bodies, recipients, or contact
+records:
+
+```json
+{"…":"…","method":"sendMessageToGuests","meta":{"eventId":"…","sendToAll":true,"guests":4213,"channels":[2,3],"bodyChars":180}}
+```
+
+Vercel runtime logs are short-retention. Anything intended as an audit trail
+needs a log drain, and arguably belongs in the Aeon Pass API itself, which sees
+every call along with its effect.
+
 ## Deploying
 
 Currently on Vercel, fronted by `mcp.aeonpass.com` (Cloudflare DNS, **grey cloud
