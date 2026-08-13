@@ -70,6 +70,10 @@ function callMeta(method: string, args: unknown[]): Record<string, unknown> | un
       return { id: a };
     case "deleteGuest":
       return { id: a, invitationId: b };
+    // Field *names* only — the values are guest PII.
+    case "patchGuest":
+    case "updateGuest":
+      return { id: a, fields: Object.keys((b as object) ?? {}) };
     case "listContacts":
     case "listGuestGroups":
       return { organizationId: a };
@@ -344,6 +348,40 @@ export function createClient(apiKey: string, options: ClientOptions = {}) {
       }
     ) {
       return request("PUT", `/api/portal/guest/${id}`, params);
+    },
+
+    /**
+     * JSON Merge Patch: only the fields present in `params` are touched, and
+     * omitted ones are left alone. `request` runs the body through
+     * JSON.stringify, which drops `undefined` keys, so partial objects work as
+     * intended — while an explicit `null` survives and clears the field.
+     *
+     * The spec types these fields as `PatchFieldOfNullableOfX`, but that is the
+     * C# wrapper leaking into the generated schema; the endpoint description is
+     * explicit that plain values go on the wire, not `{ isSet, value }`.
+     */
+    patchGuest(
+      id: string,
+      params: {
+        eventId?: string;
+        isUpdateAllEvent?: boolean;
+        firstName?: string;
+        lastName?: string;
+        displayName?: string;
+        phone?: string | null;
+        email?: string | null;
+        groupId?: string;
+        techaeonCode?: string | null;
+        guestCode?: string | null;
+        invitation?: {
+          designMappingId?: string;
+          guestPasses?: number | null;
+          isUnlimited?: boolean | null;
+          statusId?: string;
+        };
+      }
+    ) {
+      return request("PATCH", `/api/portal/guest/${id}`, params);
     },
 
     deleteGuest(id: string, invitationId?: string) {

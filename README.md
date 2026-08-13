@@ -140,7 +140,8 @@ Two things cost real debugging time; both are load-bearing:
 | `get_event` | Get event details by ID |
 | `list_guests` | List, search, and filter guests for an event (paginated) |
 | `create_guest` | Add a guest to an event, optionally issuing an invitation |
-| `update_guest` | Update guest details or invitation |
+| `update_guest` | Full update of guest details or invitation |
+| `patch_guest` | Partial update — only the fields you pass are changed |
 | `delete_guest` | Soft-delete a guest, or remove a single invitation |
 | `send_invite` | Send or resend invitations (sets status to SENT) |
 | `send_message_to_guests` | Message guests via InApp / SMS / Email |
@@ -204,7 +205,7 @@ claude mcp add --scope project aeonpass-dev -- node "$(pwd)/dist/index.js"
 
 That needs `AEONPASS_API_KEY` in your environment, since stdio reads the key
 from there. Remove it when you're done — running it alongside the hosted
-`aeonpass` server means two copies of all 24 tools, which measurably degrades
+`aeonpass` server means two copies of all 25 tools, which measurably degrades
 tool selection.
 
 ```bash
@@ -219,12 +220,41 @@ npm run serve       # HTTP mode (compiled)
 `X-API-KEY` header, so local runs behave as they always have. That fallback is
 deliberately unavailable to the hosted entrypoints.
 
+### Keeping up with the API
+
+```bash
+npm run check:api             # what moved since the last snapshot
+npm run check:api -- --write  # refresh specs/*.json once handled
+```
+
+`info.version` is `1.0.0` on all three Aeon Pass specs and has **not moved**
+through a full path restructure (`/api/techaeon/public` → `/api/portal/techaeon`),
+a change to every list response shape, and the addition of `PATCH /guest/{id}`.
+So the version field can't tell you anything. Instead, `specs/*.json` holds a
+committed snapshot of each spec and `check:api` diffs the live ones against it,
+reporting:
+
+- `+ NEW` — an operation the API gained (implement it)
+- `- GONE` — an operation it dropped (a tool is now broken)
+- `~ body changed` — same operations, but schemas moved; `git diff` after `--write`
+- `! UNIMPLEMENTED` — in the spec, no client method
+- `! STALE` — a client method whose endpoint no longer exists
+
+A GitHub Action runs it weekly, and on any PR touching `specs/`, `src/api.ts`,
+or the script. Adding an endpoint means: implement it in `createClient`
+(`src/api.ts`), register the tool in `src/server.ts`, then add the operation to
+`COVERED` in `scripts/check-api.mjs`.
+
+`GET /contact/{orgId}/export` is deliberately **not** exposed — it returns a CSV
+of every contact, which is a large PII dump into an LLM context. `list_contacts`
+covers paged reads. It's listed in `SKIPPED` so the check doesn't flag it.
+
 Tools are defined once in `src/server.ts` and shared by every transport. The API
 key is a parameter rather than a module-level env read, so each entrypoint
 decides where it comes from:
 
 ```
-src/api.ts     createClient(apiKey) → the 24 API calls, bound to that key
+src/api.ts     createClient(apiKey) → the 25 API calls, bound to that key
 src/server.ts  createServer(client) → registers the tools
 src/app.ts     Hono app; reads X-API-KEY per request
 src/index.ts   stdio      → key from AEONPASS_API_KEY

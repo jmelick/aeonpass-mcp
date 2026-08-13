@@ -1,0 +1,981 @@
+{
+  "x-generator": "NSwag v14.0.3.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))",
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AeonPassOrganization.API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://apv2-gatewayapp-prod-westus3.azurewebsites.net"
+    }
+  ],
+  "paths": {
+    "/api/portal/contact": {
+      "post": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Create a new contact.",
+        "description": "Creates a new contact for an organization.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Behavior:**\n- `FirstName` is required.\n- If the contact's `Phone`/`Email` matches an existing platform user, the contact is automatically linked to that user account.\n- `ProfilePhoto`, if provided, is uploaded and its URL is stored on the contact.",
+        "operationId": "AeonPassOrganizationAPIEndPointsContactsPortalPortalCreateContactEndPoint",
+        "requestBody": {
+          "x-name": "PortalCreateContactEndPointRequest",
+          "description": "",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalCreateContactEndPointRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/contact/{id}": {
+      "delete": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Delete contact.",
+        "description": "Deletes a contact by its unique identifier. This is a soft delete — the record is marked inactive, not physically removed.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Response:** `204 No Content` on success, with no response body. On failure, returns an error response describing what went wrong.",
+        "operationId": "AeonPassOrganizationAPIEndPointsContactsPortalPortalDeleteContactEndPoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {}
+              },
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Get contact details.",
+        "description": "Returns the details of a single contact by its unique identifier.\n\n**Authentication:** Include `X-API-KEY` in the request header.",
+        "operationId": "AeonPassOrganizationAPIEndPointsContactsPortalPortalGetContactEndPoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Update contact.",
+        "description": "Updates an existing contact's details.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Behavior:**\n- `FirstName` is required.\n- `ProfilePhoto`, if provided, replaces the contact's existing profile photo.",
+        "operationId": "AeonPassOrganizationAPIEndPointsContactsPortalPortalUpdateContactEndPoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "PortalUpdateContactEndPointRequest",
+          "description": "",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalUpdateContactEndPointRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/contact/{OrganizationId}/export": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Export list of contacts as CSV.",
+        "description": "Exports contacts for an organization as a CSV file.\n\n**Authentication:** Include `X-API-KEY` in the request header. `OrganizationId` is required in the route param.",
+        "operationId": "AeonPassOrganizationAPIEndPointsContactsPortalPortalExportContactCsvEndPoint",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageNo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            }
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "sortDirection",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "exportAllContact",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {}
+              },
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/contact/{OrganizationId}/list": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Fetch list of contacts.",
+        "description": "Returns a paginated list of contacts for an organization. Page params are optional — defaults to the first 100 contacts, ordered by display name.\n\n**Authentication:** Include `X-API-KEY` in the request header. `OrganizationId` is required in the route param.\n\n**Response shape:**\n```json\n{\n  \"data\": [ ... ],\n  \"pagination\": {\n    \"totalCount\": 100,\n    \"page\": 1,\n    \"pageSize\": 20,\n    \"totalPages\": 5\n  }\n}\n```\nIf `PageNo`/`PageSize` are omitted, they default to `1`/`100` for the purposes of computing `pagination`.",
+        "operationId": "AeonPassOrganizationAPIEndPointsContactsPortalPortalListContactEndPoint",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageNo",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "nullable": true
+            }
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "sortDirection",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "includeAll",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalPagedResponseOfContactDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/contact/send-message": {
+      "post": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Send message to contacts.",
+        "description": "Sends a plain message to one or more contacts in an organization, over one or more communication channels.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Behavior:**\n- `ContactIds` selects which contacts receive the message.\n- Delivery is asynchronous — the request succeeds once the message has been handed off for processing, independent of whether delivery to each contact ultimately succeeds.\n\n**Communication Channels (`TypeIds`):**\n| Value | Channel |\n|-------|---------|\n| `1` | InApp |\n| `2` | SMS |\n| `3` | Email |\n\n**Response:** `204 No Content` on success, with no response body. On failure, returns an error response describing what went wrong.",
+        "operationId": "AeonPassOrganizationAPIEndPointsContactsPortalPortalSendMessageToContactEndPoint",
+        "requestBody": {
+          "x-name": "PortalSendMessageToContactEndPointRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalSendMessageToContactEndPointRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {}
+              },
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/contact/upload-list": {
+      "post": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Upload contact list.",
+        "description": "Bulk-creates or updates contacts for an organization from a parsed CSV row list.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Behavior:**\n- Each row is matched against existing contacts by phone/email; matches are updated, new entries are created.\n- Rows that fail validation are reported in `ErrorItems` without failing the rest of the batch.",
+        "operationId": "AeonPassOrganizationAPIEndPointsContactsPortalPortalUploadContactByCSVEndPoint",
+        "requestBody": {
+          "x-name": "PortalUploadContactByCSVEndPointRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalUploadContactByCSVEndPointRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadContactResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/guest-group/{organizationId}/list": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Get list of guest groups.",
+        "description": "Fetches the guest groups available for an organization — used to resolve the valid `GroupId` values when creating or updating a guest.\n\n**Authentication:** Include `X-API-KEY` in the request header. `OrganizationId` is required in the route param.\n\n**Behavior:**\n- Returns guest groups that belong to the organization, plus any system default groups (`IsDefault = true`) shared across all organizations.\n- Only active groups are returned.\n- This endpoint is **not paginated** — it always returns the full set of groups as a single page. `pagination.totalPages` will always be `1` and `pagination.pageSize` reflects the actual group count, regardless of any page size you might pass elsewhere in this API.\n\n**Response shape:**\n```json\n{\n  \"data\": [ ... ],\n  \"pagination\": {\n    \"totalCount\": 12,\n    \"page\": 1,\n    \"pageSize\": 12,\n    \"totalPages\": 1\n  }\n}\n```",
+        "operationId": "AeonPassOrganizationAPIEndPointsGuestGroupsPortalPortalListGuestGroupsEndPoint",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalPagedResponseOfPortalListGuestGroupsEndPointResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PortalCreateContactEndPointRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "zip": {
+            "type": "string",
+            "nullable": true
+          },
+          "socialHandle": {
+            "type": "string",
+            "nullable": true
+          },
+          "profilePhoto": {
+            "type": "string",
+            "format": "binary",
+            "nullable": true
+          }
+        }
+      },
+      "ContactDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "zip": {
+            "type": "string",
+            "nullable": true
+          },
+          "socialHandle": {
+            "type": "string",
+            "nullable": true
+          },
+          "deviceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isEmailChanged": {
+            "type": "boolean"
+          },
+          "isPhoneChanged": {
+            "type": "boolean"
+          },
+          "isUserAccountDeleted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PortalUpdateContactEndPointRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "zip": {
+            "type": "string",
+            "nullable": true
+          },
+          "socialHandle": {
+            "type": "string",
+            "nullable": true
+          },
+          "profilePhoto": {
+            "type": "string",
+            "format": "binary",
+            "nullable": true
+          }
+        }
+      },
+      "PortalPagedResponseOfContactDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactDto"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PortalPagination"
+          }
+        }
+      },
+      "PortalSendMessageToContactEndPointRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "organizationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "messageBody": {
+            "type": "string"
+          },
+          "contactIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          "typeIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/CommunicationType"
+            }
+          }
+        }
+      },
+      "PortalUploadContactByCSVEndPointRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UploadContactByCsvDto"
+            }
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "UploadContactResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "totalRecords": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "newRecords": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updatedRecords": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errorRecords": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errorItems": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ValidateContactResponseDto"
+            }
+          },
+          "commonErrors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "PortalPagedResponseOfPortalListGuestGroupsEndPointResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortalListGuestGroupsEndPointResponse"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PortalPagination"
+          }
+        }
+      },
+      "PortalPagination": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CommunicationType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "InApp",
+          "SMS",
+          "Email"
+        ],
+        "enum": [
+          1,
+          2,
+          3
+        ]
+      },
+      "UploadContactByCsvDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ValidateContactResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "duplicateContact": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DuplicateContact"
+              }
+            ]
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "severity": {
+            "$ref": "#/components/schemas/ValidationSeverity"
+          }
+        }
+      },
+      "PortalListGuestGroupsEndPointResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "organizationId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DuplicateContact": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "ValidationSeverity": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Error",
+          "Warning",
+          "Info"
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  }
+}

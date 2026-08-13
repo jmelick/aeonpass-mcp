@@ -1,0 +1,1671 @@
+{
+  "x-generator": "NSwag v14.0.3.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))",
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AeonPassEvent.API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://apv2-gatewayapp-prod-westus3.azurewebsites.net"
+    }
+  ],
+  "paths": {
+    "/api/portal/event/{id}": {
+      "get": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Fetch event details.",
+        "description": "Fetches public-facing details for an event.\n\n**Authentication:** Include `X-API-KEY` in the request header. Event id is required in the route param.\n\n**Behavior:**\n- Only active events are returned.\n- `OrganizationId`, internal status codes, marketing page link, and email-notification settings are not included in the response.\n- Venue and design information is returned as reference IDs only (`VenueId`, `DesignMappingId`, `DesignId`) — no address/location details or design content (colors, template, images) are included.\n- No ticketing tiers, pricing, or promo code details are included — only whether ticketing is enabled and the currency used.\n- No guest, invitation, or sub-event data is included.",
+        "operationId": "AeonPassEventAPIEndPointsEventsPortalPortalGetEventEndPoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalGetEventEndPointResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/guest": {
+      "post": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Create a new guest.",
+        "description": "Creates a new guest for an event and, optionally, issues them an invitation.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Behavior:**\n- `FirstName` is required, and at least one of `Phone` or `Email` must be provided.\n- `GroupId` is required. Valid guest group IDs can be retrieved via `GET /portal/guest-group/{OrganizationId}/list`.\n- Rejects the request if a guest with the same `Phone` or `Email` already exists in the event.\n- If `GuestCode` is provided, it must not already be used by any guest in any event.\n- If `TechaeonCode` is provided, it is validated against the event and the guest is linked to that Techaeon.\n- If `Invitation` is provided, an invitation is created with status **CREATED** (or **PURCHASED** if `IsExternalTicket` is set), and a QR code is generated for it. The response's `Invitation.Id` is the invitation's own identifier — save it if you plan to reference the invitation directly later, though `PUT /portal/guest/{Id}` no longer requires it (it resolves the guest's current invitation automatically).\n- If the guest's `Phone`/`Email` matches an existing platform user account, the guest is automatically linked to that user.\n- If `IsExternalTicket` is set, the `ExternalTicket` details are used to create an associated external ticket order.\n\n**Valid Invitation Status Codes:**\n| Code | Description |\n|------|-------------|\n| `CREATED` | Invitation created but not yet sent. |\n| `SENT` | Invitation has been sent to the guest. |\n| `VIEWED` | Guest has viewed the invitation. |\n| `ACCEPTED` | Guest has accepted the invitation. |\n| `DECLINED` | Guest has declined the invitation. |\n| `VOIDED` | Invitation has been voided. |\n| `EXPIRED` | Invitation has expired. |\n| `ADMITTED` | Guest has been admitted to the event. |\n| `CANCELLED` | Invitation has been cancelled. |\n| `PURCHASED` | Invitation is linked to a purchased/external ticket. |",
+        "operationId": "AeonPassEventAPIEndPointsGuestsPortalPortalCreateGuestEndPoint",
+        "requestBody": {
+          "x-name": "PortalCreateGuestEndPointRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalCreateGuestEndPointRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalCreateGuestEndPointResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/guest/{eventId}/list": {
+      "post": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Fetch list of guests.",
+        "description": "Returns a paginated list of guests for an event. Supports filtering, sorting, and free-text search.\n\n**Authentication:** Include `X-API-KEY` in the request header. `EventId` is required in the route param.\n\n**Filtering Options:**\n- `GroupId` — Scope results to guests in a specific guest group. Valid group IDs can be retrieved via `GET /portal/guest-group/{OrganizationId}/list`.\n- `DesignMappingId` — Scope results to guests whose invitation uses a specific design.\n- `SearchTerm` — Free-text search across guest name, email, and phone.\n- `SortBy` / `SortDirection` (`asc` or `desc`) — Order the results.\n\n**Response shape:**\n```json\n{\n  \"data\": [ ... ],\n  \"pagination\": {\n    \"totalCount\": 100,\n    \"page\": 1,\n    \"pageSize\": 20,\n    \"totalPages\": 5\n  }\n}\n```\nIf `PageNo`/`PageSize` are omitted, they default to `1`/`100` for the purposes of computing `pagination`.",
+        "operationId": "AeonPassEventAPIEndPointsGuestsPortalPortalListGuestEndPoint",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "PortalListGuestEndPointRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalListGuestEndPointRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalPagedResponseOfPortalGuestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/guest/{id}": {
+      "delete": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Delete a guest.",
+        "description": "Deletes a guest, or removes a single invitation if the guest holds more than one.\n\n**Authentication:** Include `X-API-KEY` in the request header. Guest id is required in the route param.\n\n**Behavior:**\n- This is a soft delete — records are marked inactive, never physically removed.\n- If `InvitationId` is provided and belongs to the guest, only that invitation (and any Techaeon mapped to it) is deactivated.\n- The guest record itself is only deactivated once it has no other active invitations remaining, including when no `InvitationId` is provided at all.\n- If the guest still has other active invitations after the targeted one is removed, the guest record stays active.\n- Any external ticket order linked to the guest is cleaned up once the guest is fully removed.\n\n**Response:** `204 No Content` on success, with no response body. On failure, returns an error response describing what went wrong.",
+        "operationId": "AeonPassEventAPIEndPointsGuestsPortalPortalDeleteGuestEndPoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          {
+            "name": "invitationId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "guid",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {}
+              },
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Partially update a guest — only the fields you send are touched.",
+        "description": "Updates only the fields present in the request body. This is a true partial update\n(JSON Merge Patch semantics), unlike `PUT /portal/guest/{Id}` which replaces the\nwhole record.\n\n**Every field is a plain value in the JSON — never a `{ \"isSet\": ..., \"value\": ... }`\nwrapper.** That shape only exists internally to tell \"omitted\" apart from \"sent as\nnull\"; sending it literally as JSON will fail to deserialize. For example, to rename\na guest and touch nothing else:\n```json\n{\n  \"eventId\": \"e06c9e46-b959-4745-af62-14d9d57947f0\",\n  \"firstName\": \"Jordan Rivera\"\n}\n```\n`lastName`, `phone`, `groupId`, etc. are simply absent from the body above — they are\nleft exactly as they are today.\n\n- **Omit a field** to leave it completely unchanged.\n- **Send a field with a value** to set/replace it.\n- **Send a field as explicit `null`** to clear it, where the domain allows it (e.g.\n  `lastName`, `techaeonCode`, `guestCode`). Fields that can never be empty on a guest\n  (`firstName`, `groupId`) reject an explicit `null` with a validation error instead\n  of silently ignoring it.\n- `invitation` and `externalTicket` are the two exceptions to the rule above — they're\n  plain nested objects in the schema (not the omit/value/null tri-state), because\n  there's no separate \"clear\" behavior for either one to distinguish. Omitting the key\n  or sending it as `null` both mean the same thing: leave it untouched. Send an object\n  to create/update one.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Behavior:**\n- `Phone`/`Email` may both be omitted for a status- or Techaeon-only patch — the\n  guest's current contact info is kept. If a patch would leave the guest with neither\n  Phone nor Email (e.g. explicitly nulling both), the request is rejected with\n  `PHONE_OR_EMAIL_REQUIRED`.\n- `TechaeonCode`: omit to leave the current mapping untouched, send an explicit\n  `null` to detach it, or send a new code to validate and link it. Changing the\n  Techaeon code is only allowed while the guest's invitation status is `CREATED`,\n  `SENT`, or `VIEWED`.\n- `Invitation` is matched to the guest automatically (a guest has at most one active\n  invitation) — you don't need to know its Id. Omit `Invitation` entirely to leave it\n  untouched; within it, omit individual fields (e.g. send only `statusId`) to leave\n  them unchanged too. `Invitation.DesignMappingId` is required only the first time an\n  invitation is created for a guest that doesn't have one yet.\n- If `Phone`/`Email` changes, the invitation's QR code is regenerated.\n- If the invitation status changes without an explicit `TechaeonCode`, a Techaeon is\n  automatically generated for the new status.\n\n**Valid Invitation Status Codes:**\n| Code | Description |\n|------|-------------|\n| `CREATED` | Invitation created but not yet sent. |\n| `SENT` | Invitation has been sent to the guest. |\n| `VIEWED` | Guest has viewed the invitation. |\n| `ACCEPTED` | Guest has accepted the invitation. |\n| `DECLINED` | Guest has declined the invitation. |\n| `VOIDED` | Invitation has been voided. |\n| `EXPIRED` | Invitation has expired. |\n| `ADMITTED` | Guest has been admitted to the event. |\n| `CANCELLED` | Invitation has been cancelled. |\n| `PURCHASED` | Invitation is linked to a purchased/external ticket. |",
+        "operationId": "AeonPassEventAPIEndPointsGuestsPortalPortalPatchGuestEndPoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "PortalPatchGuestEndPointRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalPatchGuestEndPointRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalPatchGuestEndPointResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Update existing guest details.",
+        "description": "Updates an existing guest's details and, optionally, their invitation.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Behavior:**\n- `FirstName` is required, and at least one of `Phone` or `Email` must be provided.\n- `GroupId` is required. Valid guest group IDs can be retrieved via `GET /portal/guest-group/{OrganizationId}/list`.\n- Rejects the request if the new `Phone`/`Email` already belongs to a different guest in the same event.\n- If `GuestCode` is changed, the new code must not already be used by a different guest in any event.\n- If `TechaeonCode` is changed, it is validated against the event. The Techaeon code can only be changed while the guest's invitation status is `CREATED`, `SENT`, or `VIEWED` — once the guest has progressed further (e.g. `ACCEPTED`, `ADMITTED`, `PURCHASED`), the code is locked and the request is rejected.\n- If `Invitation` is included and it exists for this guest, its details (passes, quantity, design, status) are updated.\n- If `Phone`/`Email` changes, the invitation's QR code is regenerated.\n- If the invitation status changes without an explicit `TechaeonCode`, a Techaeon is automatically generated for the new status.\n- If `IsExternalTicket` is set, the associated external ticket order is updated.\n\n**Valid Invitation Status Codes:**\n| Code | Description |\n|------|-------------|\n| `CREATED` | Invitation created but not yet sent. |\n| `SENT` | Invitation has been sent to the guest. |\n| `VIEWED` | Guest has viewed the invitation. |\n| `ACCEPTED` | Guest has accepted the invitation. |\n| `DECLINED` | Guest has declined the invitation. |\n| `VOIDED` | Invitation has been voided. |\n| `EXPIRED` | Invitation has expired. |\n| `ADMITTED` | Guest has been admitted to the event. |\n| `CANCELLED` | Invitation has been cancelled. |\n| `PURCHASED` | Invitation is linked to a purchased/external ticket. |",
+        "operationId": "AeonPassEventAPIEndPointsGuestsPortalPortalUpdateGuestEndPoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "PortalUpdateGuestEndPointRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalUpdateGuestEndPointRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PortalUpdateGuestEndPointResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/guest/send-invite": {
+      "post": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Invite guests for an event.",
+        "description": "Sends (or re-sends) invitations to one, several, or all guests in an event.\n\n**Authentication:** Include `X-API-KEY` in the request header. An `EventId` is required.\n\n**Behavior:**\n- Either `GuestIds` or `SendToAll = true` must be provided.\n- When `SendToAll = true`, every active invitation in the event is selected — there is currently no way to scope this to a specific invitation design from this endpoint.\n- If `InviteMessageTemplate` is provided, it is resolved against templates configured for the organization (templates are shared across the organization, not per event).\n- All matched invitations are updated to status **SENT**.\n- Invitations already in `SENT` status are updated again (harmless) but do not generate a duplicate audit log entry.\n- The invitation status update always takes effect, even if the downstream message dispatch (SMS/Email/WhatsApp/In-App) later fails.\n\n**Response:** `204 No Content` on success, with no response body. On failure, returns an error response describing what went wrong.",
+        "operationId": "AeonPassEventAPIEndPointsGuestsPortalPortalInviteGuestEndPoint",
+        "requestBody": {
+          "x-name": "PortalInviteGuestEndPointRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalInviteGuestEndPointRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {}
+              },
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    },
+    "/api/portal/guest/send-message": {
+      "post": {
+        "tags": [
+          "Portal"
+        ],
+        "summary": "Send message to guests.",
+        "description": "Sends a plain message to one, several, or all guests in an event, over one or more communication channels.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Behavior:**\n- Either `GuestIds` or `SendToAll = true` must be provided.\n- When `SendToAll = true`, all active guests in the event with an invitation are selected, excluding guests whose invitation status is `DECLINED`.\n- If a guest is linked to a registered platform user account, the message is sent to that user's registered communication phone/email instead of the guest's own stored contact details.\n- Each channel in `TypeIds` is only used if the guest has the corresponding contact detail — SMS requires a phone number, Email requires an email address.\n- An In-App notification is only sent if the guest's invitation status is `ACCEPTED` or `ADMITTED`.\n- Delivery is asynchronous — the request succeeds once the message has been handed off for processing, independent of whether delivery to each guest ultimately succeeds.\n\n**Communication Channels (`TypeIds`):**\n| Value | Channel |\n|-------|---------|\n| `1` | InApp |\n| `2` | SMS |\n| `3` | Email |\n\n**Response:** `204 No Content` on success, with no response body. On failure, returns an error response describing what went wrong.",
+        "operationId": "AeonPassEventAPIEndPointsGuestsPortalPortalSendMessageToGuestEndPoint",
+        "requestBody": {
+          "x-name": "PortalSendMessageToGuestEndPointRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PortalSendMessageToGuestEndPointRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {}
+              },
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-API-KEY": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PortalGetEventEndPointResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "parentEventId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "statusId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "statusName": {
+            "type": "string",
+            "nullable": true
+          },
+          "typeId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "typeName": {
+            "type": "string",
+            "nullable": true
+          },
+          "typeCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "maximumGuests": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "phoneToCall": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneToText": {
+            "type": "string",
+            "nullable": true
+          },
+          "contactEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "additionalGuestLimit": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "details": {
+            "type": "string",
+            "nullable": true
+          },
+          "doorOpenDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "hostName": {
+            "type": "string",
+            "nullable": true
+          },
+          "venueId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "designMappingId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "designId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "isTicketingEnabled": {
+            "type": "boolean"
+          },
+          "eventTimeZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "isRegQuestionEnable": {
+            "type": "boolean"
+          },
+          "isVenueHidden": {
+            "type": "boolean"
+          },
+          "ticketCurrency": {
+            "type": "string",
+            "nullable": true
+          },
+          "widgetRedirectUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PortalCreateGuestEndPointRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "eventId",
+          "firstName",
+          "groupId"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "groupId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "isUpdateAllEvent": {
+            "type": "boolean"
+          },
+          "techaeonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "invitation": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PortalCreateGuestEndPointInvitationRequest"
+              }
+            ]
+          },
+          "isExternalTicket": {
+            "type": "boolean"
+          },
+          "externalTicket": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExternalTicketDto"
+              }
+            ]
+          }
+        }
+      },
+      "PortalCreateGuestEndPointResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "groupName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestSource": {
+            "$ref": "#/components/schemas/GuestSource"
+          },
+          "guestCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "invitation": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PortalCreateGuestEndPointInvitationResponse"
+              }
+            ]
+          }
+        }
+      },
+      "PortalListGuestEndPointRequest": {
+        "type": "object",
+        "example": {
+          "designMappingId": null,
+          "pageNo": 1,
+          "pageSize": 10,
+          "searchTerm": null,
+          "groupId": null,
+          "sortBy": null,
+          "sortDirection": null
+        },
+        "additionalProperties": false,
+        "properties": {
+          "designMappingId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "pageNo": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "searchTerm": {
+            "type": "string",
+            "nullable": true
+          },
+          "groupId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "sortBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortDirection": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PortalPagedResponseOfPortalGuestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PortalGuestDto"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/PortalPagination"
+          }
+        }
+      },
+      "PortalPatchGuestEndPointRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "isUpdateAllEvent": {
+            "type": "boolean"
+          },
+          "firstName": {
+            "$ref": "#/components/schemas/PatchFieldOfString"
+          },
+          "lastName": {
+            "$ref": "#/components/schemas/PatchFieldOfString"
+          },
+          "displayName": {
+            "$ref": "#/components/schemas/PatchFieldOfString"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/PatchFieldOfString"
+          },
+          "email": {
+            "$ref": "#/components/schemas/PatchFieldOfString"
+          },
+          "groupId": {
+            "$ref": "#/components/schemas/PatchFieldOfNullableOfGuid"
+          },
+          "techaeonCode": {
+            "$ref": "#/components/schemas/PatchFieldOfString"
+          },
+          "guestCode": {
+            "$ref": "#/components/schemas/PatchFieldOfString"
+          },
+          "invitation": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PortalPatchGuestEndPointInvitationRequest"
+              }
+            ]
+          },
+          "isExternalTicket": {
+            "$ref": "#/components/schemas/PatchFieldOfNullableOfBoolean"
+          },
+          "externalTicket": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExternalTicketDto"
+              }
+            ]
+          }
+        }
+      },
+      "PortalPatchGuestEndPointResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "groupName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestSource": {
+            "$ref": "#/components/schemas/GuestSource"
+          },
+          "guestCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "invitation": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PortalPatchGuestEndPointInvitationResponse"
+              }
+            ]
+          }
+        }
+      },
+      "PortalUpdateGuestEndPointRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "eventId",
+          "firstName",
+          "groupId"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "groupId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "isUpdateAllEvent": {
+            "type": "boolean"
+          },
+          "techaeonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "invitation": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PortalUpdateGuestEndPointInvitationRequest"
+              }
+            ]
+          },
+          "isExternalTicket": {
+            "type": "boolean"
+          },
+          "externalTicket": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExternalTicketDto"
+              }
+            ]
+          }
+        }
+      },
+      "PortalUpdateGuestEndPointResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "groupId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "groupName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestSource": {
+            "$ref": "#/components/schemas/GuestSource"
+          },
+          "guestCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "invitation": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PortalUpdateGuestEndPointInvitationResponse"
+              }
+            ]
+          }
+        }
+      },
+      "PortalInviteGuestEndPointRequest": {
+        "type": "object",
+        "example": {
+          "eventId": "8f400d0a-7f0b-4b0d-bca0-0463e1b6b471",
+          "sendToAll": false,
+          "guestIds": [],
+          "inviteMessageTemplate": "Invite message template"
+        },
+        "additionalProperties": false,
+        "required": [
+          "eventId"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "sendToAll": {
+            "type": "boolean"
+          },
+          "guestIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          "inviteMessageTemplate": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PortalSendMessageToGuestEndPointRequest": {
+        "type": "object",
+        "example": {
+          "eventId": "bcc24655-b159-4bd9-aa37-a0434df83772",
+          "designMappingId": null,
+          "guestIds": [],
+          "messageBody": "",
+          "typeIds": null,
+          "sendToAll": null
+        },
+        "additionalProperties": false,
+        "required": [
+          "eventId"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "designMappingId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "guestIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          "messageBody": {
+            "type": "string"
+          },
+          "typeIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/CommunicationType"
+            }
+          },
+          "sendToAll": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "PortalCreateGuestEndPointInvitationRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "designMappingId"
+        ],
+        "properties": {
+          "designMappingId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "guestPasses": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isUnlimited": {
+            "type": "boolean",
+            "nullable": true
+          }
+        }
+      },
+      "ExternalTicketDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "ticketVendor": {
+            "type": "string"
+          },
+          "ticketId": {
+            "type": "string",
+            "nullable": true
+          },
+          "ticketGroup": {
+            "type": "string"
+          },
+          "ticketTier": {
+            "type": "string"
+          },
+          "totalTickets": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ticketPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "promoCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "orderDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "orderAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderAttachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderAttachmentDto"
+            }
+          }
+        }
+      },
+      "GuestSource": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "None",
+          "TechaeonId",
+          "TechaeonCode"
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
+      },
+      "PortalCreateGuestEndPointInvitationResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "designMappingId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "guestPasses": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isUnlimited": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "statusId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "statusName": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "isExternalTicket": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PortalGuestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "groupId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "groupName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestUserId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "ticketTier": {
+            "type": "string",
+            "nullable": true
+          },
+          "ticketGroup": {
+            "type": "string",
+            "nullable": true
+          },
+          "tierId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "isTicketedGuest": {
+            "type": "boolean"
+          },
+          "orderNos": {
+            "type": "string",
+            "nullable": true
+          },
+          "discountCodes": {
+            "type": "string",
+            "nullable": true
+          },
+          "promoCodes": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdOn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "referredBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "referredByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestSource": {
+            "$ref": "#/components/schemas/GuestSource"
+          },
+          "guestCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "isExternalTicket": {
+            "type": "boolean"
+          },
+          "ticketVendor": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalItems": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ticketPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "totalOrderAmount": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "ticketId": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderAttachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventGuestOrderAttchmentDto"
+            }
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventGuestOrderDto"
+            }
+          },
+          "invitation": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/InvitationDto"
+              }
+            ]
+          }
+        }
+      },
+      "PortalPagination": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "PatchFieldOfString": {
+        "type": "string",
+        "nullable": true,
+        "additionalProperties": false
+      },
+      "PatchFieldOfNullableOfGuid": {
+        "type": "string",
+        "format": "guid",
+        "nullable": true,
+        "additionalProperties": false
+      },
+      "PortalPatchGuestEndPointInvitationRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "designMappingId": {
+            "$ref": "#/components/schemas/PatchFieldOfNullableOfGuid"
+          },
+          "guestPasses": {
+            "$ref": "#/components/schemas/PatchFieldOfNullableOfInt32"
+          },
+          "isUnlimited": {
+            "$ref": "#/components/schemas/PatchFieldOfNullableOfBoolean"
+          },
+          "statusId": {
+            "$ref": "#/components/schemas/PatchFieldOfNullableOfGuid"
+          }
+        }
+      },
+      "PatchFieldOfNullableOfBoolean": {
+        "type": "boolean",
+        "nullable": true,
+        "additionalProperties": false
+      },
+      "PortalPatchGuestEndPointInvitationResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "designMappingId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "guestPasses": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isUnlimited": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "statusId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "statusName": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "isExternalTicket": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PortalUpdateGuestEndPointInvitationRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "designMappingId"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "designMappingId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1
+          },
+          "guestPasses": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isUnlimited": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "statusId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          }
+        }
+      },
+      "PortalUpdateGuestEndPointInvitationResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "designMappingId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "guestPasses": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isUnlimited": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "statusId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "statusName": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "isExternalTicket": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CommunicationType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "InApp",
+          "SMS",
+          "Email"
+        ],
+        "enum": [
+          1,
+          2,
+          3
+        ]
+      },
+      "OrderAttachmentDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileType": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string"
+          },
+          "storageFileName": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "EventGuestOrderAttchmentDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "EventGuestOrderDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "orderNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "InvitationDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "guestId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "eventId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "designMappingId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "guestPasses": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isUnlimited": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "intendedCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "admittedCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "statusId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "statusName": {
+            "type": "string",
+            "nullable": true
+          },
+          "statusCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "isConfirmed": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "qrCodeUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "tierId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "purchasedQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isTicketed": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "isExternalTicket": {
+            "type": "boolean"
+          },
+          "techaeons": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/TechaeonMappingDto"
+            }
+          }
+        }
+      },
+      "PatchFieldOfNullableOfInt32": {
+        "type": "integer",
+        "format": "int32",
+        "nullable": true,
+        "additionalProperties": false
+      },
+      "TechaeonMappingDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "guestId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "invitationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "techaeonId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "privilegeCode": {
+            "type": "string"
+          },
+          "techaeonPrivilegeId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "resourceType": {
+            "type": "string"
+          },
+          "resourceValue": {
+            "type": "string"
+          },
+          "techaeonCode": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}

@@ -261,6 +261,58 @@ export function createServer(client: AeonPassClient): McpServer {
   );
 
   server.tool(
+    "patch_guest",
+    "Partially update a guest — only the fields you pass are changed, everything else is left alone. Prefer this over update_guest for small edits, since update_guest requires firstName and groupId even when you aren't changing them.",
+    {
+      id: z.string().describe("Guest GUID"),
+      eventId: z.string().optional().describe("Event GUID — include it; the API scopes the guest by event"),
+      firstName: z.string().optional(),
+      lastName: z.string().optional(),
+      displayName: z.string().optional(),
+      phone: z.string().nullable().optional().describe("null clears it"),
+      email: z.string().nullable().optional().describe("null clears it"),
+      groupId: z.string().optional().describe("Guest group GUID"),
+      isUpdateAllEvent: z.boolean().optional().describe("Apply contact changes across all of this guest's events"),
+      techaeonCode: z.string().nullable().optional(),
+      guestCode: z.string().nullable().optional(),
+      invitationDesignMappingId: z.string().optional(),
+      invitationGuestPasses: z.number().nullable().optional(),
+      invitationIsUnlimited: z.boolean().nullable().optional(),
+      invitationStatusId: z.string().optional().describe("New invitation status GUID"),
+    },
+    async ({
+      id,
+      invitationDesignMappingId,
+      invitationGuestPasses,
+      invitationIsUnlimited,
+      invitationStatusId,
+      ...params
+    }) => {
+      // Only send `invitation` when something in it was actually provided —
+      // an empty object would be a change under merge-patch semantics.
+      const invitation = {
+        designMappingId: invitationDesignMappingId,
+        guestPasses: invitationGuestPasses,
+        isUnlimited: invitationIsUnlimited,
+        statusId: invitationStatusId,
+      };
+      const hasInvitation = Object.values(invitation).some((v) => v !== undefined);
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(
+              await client.patchGuest(id, hasInvitation ? { ...params, invitation } : params),
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    }
+  );
+
+  server.tool(
     "delete_guest",
     "Soft-delete a guest. If invitationId is provided, only that invitation is removed; the guest record stays if other invitations remain.",
     {

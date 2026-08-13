@@ -1,0 +1,44 @@
+name: API drift
+
+# The Aeon Pass specs pin info.version at 1.0.0 and don't move it when endpoints
+# change, so drift is invisible until something breaks at runtime. This polls.
+on:
+  schedule:
+    - cron: "0 14 * * 1" # Mondays, 14:00 UTC
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "specs/**"
+      - "scripts/check-api.mjs"
+      - "src/api.ts"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Compare live specs against committed snapshots
+        run: npm run check:api
+      - name: Explain a failure
+        if: failure()
+        run: |
+          {
+            echo "### Aeon Pass API drift detected"
+            echo
+            echo 'The published specs no longer match `specs/*.json`.'
+            echo
+            echo "Locally:"
+            echo '```bash'
+            echo 'npm run check:api            # see what moved'
+            echo 'npm run check:api -- --write # refresh snapshots once handled'
+            echo '```'
+            echo
+            echo 'Implement any new operation in `createClient` (src/api.ts), register'
+            echo 'the tool in `src/server.ts`, then add it to `COVERED` in'
+            echo '`scripts/check-api.mjs`.'
+          } >> "$GITHUB_STEP_SUMMARY"

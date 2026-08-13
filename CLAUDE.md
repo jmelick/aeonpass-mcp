@@ -19,7 +19,7 @@ parameter, not a module-level env read, so each transport decides where it
 comes from.
 
 ```
-src/api.ts     createClient(apiKey) → all 24 API calls bound to that key
+src/api.ts     createClient(apiKey) → all 25 API calls bound to that key
 src/server.ts  createServer(client) → registers the tools
 src/app.ts     Hono app; reads X-API-KEY per request
 src/index.ts   stdio      → key from AEONPASS_API_KEY        (Claude Code / desktop)
@@ -35,7 +35,7 @@ one person's key. Never add request logging that captures headers.
 
 ## Logging
 
-`createClient` wraps all 24 methods and emits one JSON line per call to
+`createClient` wraps all 25 methods and emits one JSON line per call to
 **stderr** — stdout belongs to the stdio transport's JSON-RPC frames, so writing
 there corrupts the protocol.
 
@@ -86,7 +86,8 @@ All tools call the Aeon Pass gateway at `https://apv2-gatewayapp-prod-westus3.az
 | `get_event` | Get event details by ID |
 | `list_guests` | List/search guests for an event (paginated) |
 | `create_guest` | Add a guest to an event, optionally issue invitation |
-| `update_guest` | Update guest details or invitation |
+| `update_guest` | Full update of guest details or invitation |
+| `patch_guest` | Partial update — only the fields you pass are changed |
 | `delete_guest` | Soft-delete a guest or remove a single invitation |
 | `send_invite` | Send/resend invitations to guests (sets status to SENT) |
 | `send_message_to_guests` | Message guests via InApp/SMS/Email |
@@ -106,9 +107,24 @@ All tools call the Aeon Pass gateway at `https://apv2-gatewayapp-prod-westus3.az
 ## Environment
 Requires `AEONPASS_API_KEY` env var.
 
+## Staying in sync with the API
+
+The specs pin `info.version` at `1.0.0` and don't move it — not for the path
+restructure, not for the list-response reshape, not for `PATCH /guest/{id}`.
+Version is useless for change detection, so `specs/*.json` holds a committed
+snapshot and `npm run check:api` diffs the live specs against it, also flagging
+operations with no client method and client methods with no operation. A weekly
+GitHub Action runs it.
+
+Adding an endpoint: implement in `createClient` (`api.ts`) → register the tool
+(`server.ts`) → add the operation to `COVERED` in `scripts/check-api.mjs`.
+`GET /contact/{orgId}/export` sits in `SKIPPED` on purpose — a full-contact CSV
+is a large PII dump into an LLM context.
+
 ## Commands
 ```
-npm run build   # compile TypeScript
-npm run dev     # run with tsx (dev)
-npm run start   # run compiled JS
+npm run build       # compile TypeScript
+npm run dev         # run with tsx (dev)
+npm run start       # run compiled JS
+npm run check:api   # detect Aeon Pass API drift
 ```

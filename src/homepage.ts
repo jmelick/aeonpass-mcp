@@ -76,7 +76,7 @@ export function homepage(origin: string): string {
     <div class="row"><span><span class="dot"></span>Status</span><span>Operational</span></div>
     <div class="row"><span>Endpoint</span><span><code>${origin}/mcp</code></span></div>
     <div class="row"><span>Transport</span><span>Streamable HTTP</span></div>
-    <div class="row"><span>Tools</span><span>24 &middot; techaeons, events, guests, contacts</span></div>
+    <div class="row"><span>Tools</span><span>25 &middot; techaeons, events, guests, contacts</span></div>
   </div>
 
   <h2>Connect</h2>
