@@ -52,11 +52,14 @@ bodies, and API error text (which can echo request content back). Only the
 status code is kept on failure.
 
 `callMeta` in `api.ts` records argument *shape* for calls where it matters after
-the fact — bulk sends, deletes, org-scoped reads. It logs counts and IDs, never
-message bodies, recipients, or contact records. `organizationId` is included on
-the org-scoped calls specifically because the API trusts that argument instead
-of deriving it from the key; that field is the only signal that would reveal a
-key reaching another org's data.
+the fact — bulk sends and deletes. It logs counts and IDs, never message
+bodies, recipients, or contact records.
+
+Every contact and guest-group endpoint resolves `organizationId` server-side
+from the API key — it is never a request parameter, so a key can only ever
+reach its own org's data. `create_contact`, `update_contact`, `list_contacts`,
+`send_message_to_contacts`, `upload_contacts`, and `list_guest_groups` take no
+`organizationId` argument.
 
 Pass `createClient(key, { onCall })` to redirect or disable (`onCall: () => {}`).
 Note Vercel runtime logs are short-retention — a log drain is required for
@@ -118,8 +121,8 @@ GitHub Action runs it.
 
 Adding an endpoint: implement in `createClient` (`api.ts`) → register the tool
 (`server.ts`) → add the operation to `COVERED` in `scripts/check-api.mjs`.
-`GET /contact/{orgId}/export` sits in `SKIPPED` on purpose — a full-contact CSV
-is a large PII dump into an LLM context.
+`GET /contact/export` sits in `SKIPPED` on purpose — a full-contact CSV is a
+large PII dump into an LLM context.
 
 ## Commands
 ```

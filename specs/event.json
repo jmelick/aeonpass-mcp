@@ -961,7 +961,6 @@
         "type": "object",
         "example": {
           "eventId": "bcc24655-b159-4bd9-aa37-a0434df83772",
-          "designMappingId": null,
           "guestIds": [],
           "messageBody": "",
           "typeIds": null,
@@ -976,11 +975,6 @@
             "type": "string",
             "format": "guid",
             "minLength": 1
-          },
-          "designMappingId": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
           },
           "guestIds": {
             "type": "array",

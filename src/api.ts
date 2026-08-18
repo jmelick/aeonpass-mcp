@@ -32,13 +32,9 @@ export interface ClientOptions {
 
 /**
  * Records the *shape* of arguments for calls where that matters after the fact
- * — bulk sends, deletes, and the org-scoped reads. Deliberately omits message
- * bodies, recipient lists, and contact records: those are the PII, and logs are
- * not the place for them.
- *
- * organizationId is included on the org-scoped calls because the API currently
- * trusts that argument rather than deriving it from the key, so this is the
- * only signal that would show a key reaching another org's data.
+ * — bulk sends and deletes. Deliberately omits message bodies, recipient
+ * lists, and contact records: those are the PII, and logs are not the place
+ * for them.
  */
 function callMeta(method: string, args: unknown[]): Record<string, unknown> | undefined {
   const a = args[0] as any;
@@ -56,13 +52,12 @@ function callMeta(method: string, args: unknown[]): Record<string, unknown> | un
       };
     case "sendMessageToContacts":
       return {
-        organizationId: a?.organizationId,
         contacts: a?.contactIds?.length ?? 0,
         channels: a?.typeIds,
         bodyChars: a?.messageBody?.length ?? 0,
       };
     case "uploadContacts":
-      return { organizationId: a?.organizationId, rows: a?.contacts?.length ?? 0 };
+      return { rows: a?.contacts?.length ?? 0 };
     case "createGroup":
       return { generated: a?.noOfTechaeons };
     case "deleteTechaeon":
@@ -74,9 +69,6 @@ function callMeta(method: string, args: unknown[]): Record<string, unknown> | un
     case "patchGuest":
     case "updateGuest":
       return { id: a, fields: Object.keys((b as object) ?? {}) };
-    case "listContacts":
-    case "listGuestGroups":
-      return { organizationId: a };
     default:
       return undefined;
   }
@@ -405,15 +397,15 @@ export function createClient(apiKey: string, options: ClientOptions = {}) {
       guestIds?: string[];
       typeIds?: number[];
       sendToAll?: boolean;
-      designMappingId?: string;
     }) {
       return request("POST", "/api/portal/guest/send-message", params);
     },
 
     // ── Contacts ──
+    // organizationId is resolved server-side from the API key on every
+    // endpoint below — it is not a request parameter.
 
     createContact(params: {
-      organizationId: string;
       firstName: string;
       lastName?: string;
       displayName?: string;
@@ -436,7 +428,6 @@ export function createClient(apiKey: string, options: ClientOptions = {}) {
     updateContact(
       id: string,
       params: {
-        organizationId: string;
         firstName: string;
         lastName?: string;
         displayName?: string;
@@ -458,17 +449,14 @@ export function createClient(apiKey: string, options: ClientOptions = {}) {
       return request("DELETE", `/api/portal/contact/${id}`);
     },
 
-    listContacts(
-      organizationId: string,
-      params: {
-        pageNo?: number;
-        pageSize?: number;
-        searchTerm?: string;
-        sortBy?: string;
-        sortDirection?: string;
-        includeAll?: boolean;
-      }
-    ) {
+    listContacts(params: {
+      pageNo?: number;
+      pageSize?: number;
+      searchTerm?: string;
+      sortBy?: string;
+      sortDirection?: string;
+      includeAll?: boolean;
+    }) {
       const query: Record<string, string | undefined> = {
         includeAll: String(params.includeAll ?? true),
       };
@@ -477,20 +465,14 @@ export function createClient(apiKey: string, options: ClientOptions = {}) {
       if (params.searchTerm) query.searchTerm = params.searchTerm;
       if (params.sortBy) query.sortBy = params.sortBy;
       if (params.sortDirection) query.sortDirection = params.sortDirection;
-      return request("GET", `/api/portal/contact/${organizationId}/list`, undefined, query);
+      return request("GET", "/api/portal/contact/list", undefined, query);
     },
 
-    sendMessageToContacts(params: {
-      organizationId: string;
-      messageBody: string;
-      contactIds: string[];
-      typeIds?: number[];
-    }) {
+    sendMessageToContacts(params: { messageBody: string; contactIds: string[]; typeIds?: number[] }) {
       return request("POST", "/api/portal/contact/send-message", params);
     },
 
     uploadContacts(params: {
-      organizationId: string;
       contacts: Array<{
         firstName: string;
         lastName?: string;
@@ -503,8 +485,8 @@ export function createClient(apiKey: string, options: ClientOptions = {}) {
       return request("POST", "/api/portal/contact/upload-list", params);
     },
 
-    listGuestGroups(organizationId: string) {
-      return request("GET", `/api/portal/guest-group/${organizationId}/list`);
+    listGuestGroups() {
+      return request("GET", "/api/portal/guest-group/list");
     },
   };
 

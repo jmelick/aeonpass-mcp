@@ -47,15 +47,15 @@ const COVERED = {
   "GET /api/portal/contact/{id}": "getContact",
   "PUT /api/portal/contact/{id}": "updateContact",
   "DELETE /api/portal/contact/{id}": "deleteContact",
-  "GET /api/portal/contact/{OrganizationId}/list": "listContacts",
+  "GET /api/portal/contact/list": "listContacts",
   "POST /api/portal/contact/send-message": "sendMessageToContacts",
   "POST /api/portal/contact/upload-list": "uploadContacts",
-  "GET /api/portal/guest-group/{organizationId}/list": "listGuestGroups",
+  "GET /api/portal/guest-group/list": "listGuestGroups",
 };
 
 /** Endpoints we've decided not to expose, and why. */
 const SKIPPED = {
-  "GET /api/portal/contact/{OrganizationId}/export":
+  "GET /api/portal/contact/export":
     "bulk CSV of every contact — a large PII dump into an LLM context; list_contacts covers paged reads",
 };
 

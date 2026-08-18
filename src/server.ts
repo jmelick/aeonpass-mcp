@@ -347,7 +347,6 @@ export function createServer(client: AeonPassClient): McpServer {
       sendToAll: z.boolean().optional().describe("Send to all active guests (excludes DECLINED)"),
       guestIds: z.array(z.string()).optional().describe("Specific guest GUIDs"),
       typeIds: z.array(z.number()).optional().describe("Channel IDs: 1=InApp, 2=SMS, 3=Email"),
-      designMappingId: z.string().optional().describe("Scope to guests with this invitation design"),
     },
     async (params) => ({
       content: [{ type: "text", text: JSON.stringify(await client.sendMessageToGuests(params), null, 2) }],
@@ -358,9 +357,8 @@ export function createServer(client: AeonPassClient): McpServer {
 
   server.tool(
     "list_contacts",
-    "List contacts for an organization with pagination and search. Returns { data: [...], pagination }.",
+    "List contacts for your organization (resolved from the API key) with pagination and search. Returns { data: [...], pagination }.",
     {
-      organizationId: z.string().describe("Organization GUID"),
       pageNo: z.number().optional(),
       pageSize: z.number().optional(),
       searchTerm: z.string().optional(),
@@ -368,8 +366,8 @@ export function createServer(client: AeonPassClient): McpServer {
       sortDirection: z.enum(["asc", "desc"]).optional(),
       includeAll: z.boolean().optional().describe("Include all contacts (default true)"),
     },
-    async ({ organizationId, ...params }) => ({
-      content: [{ type: "text", text: JSON.stringify(await client.listContacts(organizationId, params), null, 2) }],
+    async (params) => ({
+      content: [{ type: "text", text: JSON.stringify(await client.listContacts(params), null, 2) }],
     })
   );
 
@@ -384,9 +382,8 @@ export function createServer(client: AeonPassClient): McpServer {
 
   server.tool(
     "create_contact",
-    "Create a new contact for an organization. firstName and organizationId are required. At least one of phone or email should be provided.",
+    "Create a new contact for your organization (resolved from the API key). firstName is required. At least one of phone or email should be provided.",
     {
-      organizationId: z.string().describe("Organization GUID"),
       firstName: z.string().describe("Required"),
       lastName: z.string().optional(),
       displayName: z.string().optional(),
@@ -406,10 +403,9 @@ export function createServer(client: AeonPassClient): McpServer {
 
   server.tool(
     "update_contact",
-    "Update an existing contact's details. firstName and organizationId are required.",
+    "Update an existing contact's details. firstName is required.",
     {
       id: z.string().describe("Contact GUID"),
-      organizationId: z.string().describe("Organization GUID"),
       firstName: z.string().describe("Required"),
       lastName: z.string().optional(),
       displayName: z.string().optional(),
@@ -441,7 +437,6 @@ export function createServer(client: AeonPassClient): McpServer {
     "send_message_to_contacts",
     "Send a message to specific contacts via InApp (1), SMS (2), and/or Email (3).",
     {
-      organizationId: z.string().describe("Organization GUID"),
       messageBody: z.string().describe("Message text"),
       contactIds: z.array(z.string()).describe("Contact GUIDs to message"),
       typeIds: z.array(z.number()).optional().describe("Channel IDs: 1=InApp, 2=SMS, 3=Email"),
@@ -455,7 +450,6 @@ export function createServer(client: AeonPassClient): McpServer {
     "upload_contacts",
     "Bulk create or update contacts from a list. Matches existing contacts by phone/email and upserts. Returns counts of new/updated/error records.",
     {
-      organizationId: z.string().describe("Organization GUID"),
       contacts: z.array(
         z.object({
           firstName: z.string(),
@@ -474,10 +468,10 @@ export function createServer(client: AeonPassClient): McpServer {
 
   server.tool(
     "list_guest_groups",
-    "Get all guest groups available for an organization (org-specific + system defaults). Use the returned IDs when creating or updating guests.",
-    { organizationId: z.string().describe("Organization GUID") },
-    async ({ organizationId }) => ({
-      content: [{ type: "text", text: JSON.stringify(await client.listGuestGroups(organizationId), null, 2) }],
+    "Get all guest groups available for your organization (resolved from the API key), plus system defaults. Not paginated — always returns the full list. Use the returned IDs when creating or updating guests.",
+    {},
+    async () => ({
+      content: [{ type: "text", text: JSON.stringify(await client.listGuestGroups(), null, 2) }],
     })
   );
 
