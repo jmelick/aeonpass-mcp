@@ -314,15 +314,7 @@ export function createClient(apiKey: string, options: ClientOptions = {}) {
         sortDirection?: string;
       }
     ) {
-      const query: Record<string, string | undefined> = {};
-      if (params.pageNo) query.pageNo = String(params.pageNo);
-      if (params.pageSize) query.pageSize = String(params.pageSize);
-      if (params.searchTerm) query.searchTerm = params.searchTerm;
-      if (params.groupId) query.groupId = params.groupId;
-      if (params.designMappingId) query.designMappingId = params.designMappingId;
-      if (params.sortBy) query.sortBy = params.sortBy;
-      if (params.sortDirection) query.sortDirection = params.sortDirection;
-      return request("GET", `/api/portal/guest/${eventId}/list`, undefined, query);
+      return request("POST", `/api/portal/guest/${eventId}/list`, params);
     },
 
     updateGuest(
