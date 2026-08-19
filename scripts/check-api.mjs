@@ -36,7 +36,7 @@ const COVERED = {
 
   "GET /api/portal/event/{id}": "getEvent",
   "POST /api/portal/guest": "createGuest",
-  "POST /api/portal/guest/{eventId}/list": "listGuests",
+  "GET /api/portal/guest/{eventId}/list": "listGuests",
   "PUT /api/portal/guest/{id}": "updateGuest",
   "PATCH /api/portal/guest/{id}": "patchGuest",
   "DELETE /api/portal/guest/{id}": "deleteGuest",
