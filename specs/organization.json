@@ -174,23 +174,15 @@
         ]
       }
     },
-    "/api/portal/contact/{OrganizationId}/export": {
+    "/api/portal/contact/export": {
       "get": {
         "tags": [
           "Portal"
         ],
         "summary": "Export list of contacts as CSV.",
-        "description": "Exports contacts for an organization as a CSV file.\n\n**Authentication:** Include `X-API-KEY` in the request header. `OrganizationId` is required in the route param.",
+        "description": "Exports contacts for an organization as a CSV file.\n\n**Authentication:** Include `X-API-KEY` in the request header.",
         "operationId": "AeonPassOrganizationAPIEndPointsContactsPortalPortalExportContactCsvEndPoint",
         "parameters": [
-          {
-            "name": "organizationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "pageNo",
             "in": "query",
@@ -262,23 +254,15 @@
         ]
       }
     },
-    "/api/portal/contact/{OrganizationId}/list": {
+    "/api/portal/contact/list": {
       "get": {
         "tags": [
           "Portal"
         ],
         "summary": "Fetch list of contacts.",
-        "description": "Returns a paginated list of contacts for an organization. Page params are optional — defaults to the first 100 contacts, ordered by display name.\n\n**Authentication:** Include `X-API-KEY` in the request header. `OrganizationId` is required in the route param.\n\n**Response shape:**\n```json\n{\n  \"data\": [ ... ],\n  \"pagination\": {\n    \"totalCount\": 100,\n    \"page\": 1,\n    \"pageSize\": 20,\n    \"totalPages\": 5\n  }\n}\n```\nIf `PageNo`/`PageSize` are omitted, they default to `1`/`100` for the purposes of computing `pagination`.",
+        "description": "Returns a paginated list of contacts for an organization. Page params are optional — defaults to the first 100 contacts, ordered by display name.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Response shape:**\n```json\n{\n  \"data\": [ ... ],\n  \"pagination\": {\n    \"totalCount\": 100,\n    \"page\": 1,\n    \"pageSize\": 20,\n    \"totalPages\": 5\n  }\n}\n```\nIf `PageNo`/`PageSize` are omitted, they default to `1`/`100` for the purposes of computing `pagination`.",
         "operationId": "AeonPassOrganizationAPIEndPointsContactsPortalPortalListContactEndPoint",
         "parameters": [
-          {
-            "name": "organizationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "pageNo",
             "in": "query",
@@ -430,32 +414,24 @@
         ]
       }
     },
-    "/api/portal/guest-group/{organizationId}/list": {
+    "/api/portal/guest-group/list": {
       "get": {
         "tags": [
           "Portal"
         ],
         "summary": "Get list of guest groups.",
-        "description": "Fetches the guest groups available for an organization — used to resolve the valid `GroupId` values when creating or updating a guest.\n\n**Authentication:** Include `X-API-KEY` in the request header. `OrganizationId` is required in the route param.\n\n**Behavior:**\n- Returns guest groups that belong to the organization, plus any system default groups (`IsDefault = true`) shared across all organizations.\n- Only active groups are returned.\n- This endpoint is **not paginated** — it always returns the full set of groups as a single page. `pagination.totalPages` will always be `1` and `pagination.pageSize` reflects the actual group count, regardless of any page size you might pass elsewhere in this API.\n\n**Response shape:**\n```json\n{\n  \"data\": [ ... ],\n  \"pagination\": {\n    \"totalCount\": 12,\n    \"page\": 1,\n    \"pageSize\": 12,\n    \"totalPages\": 1\n  }\n}\n```",
+        "description": "Fetches the guest groups available for an organization — used to resolve the valid `GroupId` values when creating or updating a guest.\n\n**Authentication:** Include `X-API-KEY` in the request header.\n\n**Behavior:**\n- Returns guest groups that belong to the organization, plus any system default groups (`IsDefault = true`) shared across all organizations.\n- Only active groups are returned.\n- This endpoint is **not paginated** — it always returns the full set of groups as a plain array.",
         "operationId": "AeonPassOrganizationAPIEndPointsGuestGroupsPortalPortalListGuestGroupsEndPoint",
-        "parameters": [
-          {
-            "name": "organizationId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "guid"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PortalPagedResponseOfPortalListGuestGroupsEndPointResponse"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PortalListGuestGroupsEndPointResponse"
+                  }
                 }
               }
             }
@@ -493,10 +469,6 @@
           "email": {
             "type": "string",
             "nullable": true
-          },
-          "organizationId": {
-            "type": "string",
-            "format": "guid"
           },
           "address": {
             "type": "string",
@@ -645,10 +617,6 @@
             "format": "guid",
             "nullable": true
           },
-          "organizationId": {
-            "type": "string",
-            "format": "guid"
-          },
           "address": {
             "type": "string",
             "nullable": true
@@ -699,10 +667,6 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "organizationId": {
-            "type": "string",
-            "format": "guid"
-          },
           "messageBody": {
             "type": "string"
           },
@@ -731,10 +695,6 @@
             "items": {
               "$ref": "#/components/schemas/UploadContactByCsvDto"
             }
-          },
-          "organizationId": {
-            "type": "string",
-            "format": "guid"
           }
         }
       },
@@ -774,18 +734,24 @@
           }
         }
       },
-      "PortalPagedResponseOfPortalListGuestGroupsEndPointResponse": {
+      "PortalListGuestGroupsEndPointResponse": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PortalListGuestGroupsEndPointResponse"
-            }
+          "id": {
+            "type": "string",
+            "format": "guid"
           },
-          "pagination": {
-            "$ref": "#/components/schemas/PortalPagination"
+          "organizationId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
           }
         }
       },
@@ -916,27 +882,6 @@
           },
           "severity": {
             "$ref": "#/components/schemas/ValidationSeverity"
-          }
-        }
-      },
-      "PortalListGuestGroupsEndPointResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
-          "organizationId": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "groupName": {
-            "type": "string"
-          },
-          "isDefault": {
-            "type": "boolean"
           }
         }
       },
