@@ -245,7 +245,7 @@ or the script. Adding an endpoint means: implement it in `createClient`
 (`src/api.ts`), register the tool in `src/server.ts`, then add the operation to
 `COVERED` in `scripts/check-api.mjs`.
 
-`GET /contact/{orgId}/export` is deliberately **not** exposed — it returns a CSV
+`GET /contact/export` is deliberately **not** exposed — it returns a CSV
 of every contact, which is a large PII dump into an LLM context. `list_contacts`
 covers paged reads. It's listed in `SKIPPED` so the check doesn't flag it.
 

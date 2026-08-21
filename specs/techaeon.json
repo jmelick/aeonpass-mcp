@@ -348,8 +348,7 @@
               "type": "integer",
               "format": "int32",
               "nullable": true
-            },
-            "example": 1
+            }
           },
           {
             "name": "pageSize",
@@ -359,8 +358,7 @@
               "type": "integer",
               "format": "int32",
               "nullable": true
-            },
-            "example": 20
+            }
           },
           {
             "name": "sortBy",
@@ -437,8 +435,7 @@
               "type": "integer",
               "format": "int32",
               "nullable": true
-            },
-            "example": 1
+            }
           },
           {
             "name": "pageSize",
@@ -448,8 +445,7 @@
               "type": "integer",
               "format": "int32",
               "nullable": true
-            },
-            "example": 20
+            }
           },
           {
             "name": "sortBy",
@@ -485,8 +481,7 @@
             "schema": {
               "type": "boolean",
               "nullable": true
-            },
-            "example": true
+            }
           },
           {
             "name": "resourceType",
@@ -567,22 +562,19 @@
           "redirectUrl": {
             "type": "string",
             "description": "The URL to redirect the holder to when the techaeon is scanned.\nOptional. If not provided, no redirect will occur on scan.",
-            "nullable": true,
-            "example": "https://example.com/checkin"
+            "nullable": true
           },
           "eventId": {
             "type": "string",
             "description": "The unique identifier of the event to associate with this techaeon.\nOptional. When provided, an Entry privilege is automatically assigned to the techaeon for this event.",
             "format": "guid",
-            "nullable": true,
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "nullable": true
           },
           "groupId": {
             "type": "string",
             "description": "The unique identifier of the group to assign this techaeon to.\nOptional. If not provided, the techaeon will not belong to any group.",
             "format": "guid",
-            "nullable": true,
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "nullable": true
           },
           "techaeonHolder": {
             "description": "The contact details of the individual to whom the techaeon is assigned.\nFirstName is required. At least one of Phone or Email must be provided.",
@@ -603,62 +595,52 @@
           "id": {
             "type": "string",
             "description": "The unique identifier of the techaeon.",
-            "format": "guid",
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "format": "guid"
           },
           "organizationId": {
             "type": "string",
             "description": "The unique identifier of the organization that owns this techaeon.",
-            "format": "guid",
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "format": "guid"
           },
           "groupId": {
             "type": "string",
             "description": "The unique identifier of the group this techaeon belongs to.\nnull if the techaeon is not assigned to any group.",
             "format": "guid",
-            "nullable": true,
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "nullable": true
           },
           "groupName": {
             "type": "string",
             "description": "The display name of the group this techaeon belongs to.\nnull if the techaeon is not assigned to any group.",
-            "nullable": true,
-            "example": "VIP Guests - Summer Gala 2025"
+            "nullable": true
           },
           "statusId": {
             "type": "string",
             "description": "The unique identifier of the current techaeon status record.",
-            "format": "guid",
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "format": "guid"
           },
           "statusName": {
             "type": "string",
-            "description": "The human-readable display name of the current techaeon status.",
-            "example": "Issued"
+            "description": "The human-readable display name of the current techaeon status."
           },
           "statusCode": {
             "type": "string",
-            "description": "The machine-readable status code representing the current lifecycle state of the techaeon.\nValid values: CREATED | ISSUED | TRANSFERRED | CANCELLED | CONSUMED",
-            "example": "ISSUED"
+            "description": "The machine-readable status code representing the current lifecycle state of the techaeon.\nValid values: CREATED | ISSUED | TRANSFERRED | CANCELLED | CONSUMED"
           },
           "lastUsedOn": {
             "type": "string",
             "description": "The UTC timestamp of the last time this techaeon was scanned or validated.\nnull if the techaeon has never been used.",
             "format": "date-time",
-            "nullable": true,
-            "example": "2025-06-15T18:30:00Z"
+            "nullable": true
           },
           "techaeonCode": {
             "type": "string",
             "description": "A unique short alphanumeric code for this techaeon, typically used for QR code generation or manual entry at check-in points.\nnull if techaeon code generation is not enabled for the group this techaeon belongs to.",
-            "nullable": true,
-            "example": "A3B7K2"
+            "nullable": true
           },
           "redirectUrl": {
             "type": "string",
             "description": "The URL the holder is redirected to when this techaeon is scanned.\nnull if no redirect is configured for this techaeon.",
-            "nullable": true,
-            "example": "https://example.com/checkin"
+            "nullable": true
           },
           "techaeonHolder": {
             "description": "The contact details of the individual assigned to this techaeon.\nnull if no holder has been assigned.",
@@ -679,8 +661,7 @@
           "redirectUrl": {
             "type": "string",
             "description": "The new redirect URL to assign to the techaeon. When the techaeon is scanned, the holder will be redirected to this URL.\nPass null or an empty string to remove any existing redirect configuration.",
-            "nullable": true,
-            "example": "https://example.com/checkin"
+            "nullable": true
           }
         }
       },
@@ -691,8 +672,7 @@
         "properties": {
           "statusCode": {
             "type": "string",
-            "description": "The new status code to apply to the techaeon. Required.\nValid values: CREATED | ISSUED | TRANSFERRED | CANCELLED | CONSUMED",
-            "example": "ISSUED"
+            "description": "The new status code to apply to the techaeon. Required.\nValid values: CREATED | ISSUED | TRANSFERRED | CANCELLED | CONSUMED"
           }
         }
       },
@@ -705,30 +685,25 @@
             "type": "string",
             "description": "The unique identifier of the event to link to this group. Optional.\nWhen provided, an Entry privilege is automatically assigned to every generated techaeon for this event.",
             "format": "guid",
-            "nullable": true,
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "nullable": true
           },
           "groupName": {
             "type": "string",
-            "description": "The display name for the techaeon group. Required.",
-            "example": "VIP Guests - Summer Gala 2025"
+            "description": "The display name for the techaeon group. Required."
           },
           "redirectUrl": {
             "type": "string",
             "description": "The URL to redirect holders to when any techaeon in this group is scanned. Optional.\nIf not provided, no group-level redirect will be applied.",
-            "nullable": true,
-            "example": "https://example.com/checkin"
+            "nullable": true
           },
           "noOfTechaeons": {
             "type": "integer",
             "description": "The number of techaeons to generate and include in this group. Required.\nEach generated techaeon will be created with an initial status of CREATED.",
-            "format": "int32",
-            "example": 100
+            "format": "int32"
           },
           "isTechaeonCodeEnabled": {
             "type": "boolean",
-            "description": "When true, a unique short alphanumeric code is generated and assigned to each techaeon in the group.\nThese codes can be used for QR code generation or manual entry at check-in points.",
-            "example": true
+            "description": "When true, a unique short alphanumeric code is generated and assigned to each techaeon in the group.\nThese codes can be used for QR code generation or manual entry at check-in points."
           }
         }
       },
@@ -740,66 +715,55 @@
           "id": {
             "type": "string",
             "description": "The unique identifier of the techaeon group.",
-            "format": "guid",
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "format": "guid"
           },
           "organizationId": {
             "type": "string",
             "description": "The unique identifier of the organization that owns this group.",
-            "format": "guid",
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "format": "guid"
           },
           "groupName": {
             "type": "string",
-            "description": "The display name of the techaeon group.",
-            "example": "VIP Guests - Summer Gala 2025"
+            "description": "The display name of the techaeon group."
           },
           "redirectUrl": {
             "type": "string",
             "description": "The URL that holders are redirected to when any techaeon in this group is scanned.\nnull if no group-level redirect is configured.",
-            "nullable": true,
-            "example": "https://example.com/checkin"
+            "nullable": true
           },
           "description": {
             "type": "string",
             "description": "An optional description providing additional context about the group's purpose.",
-            "nullable": true,
-            "example": "VIP access group for the annual summer gala event."
+            "nullable": true
           },
           "noOfTechaeons": {
             "type": "integer",
             "description": "The total number of techaeons currently in this group.",
-            "format": "int32",
-            "example": 100
+            "format": "int32"
           },
           "resourceType": {
             "type": "string",
             "description": "The type of resource linked to this group (e.g., EVENT).\nUsed in conjunction with ResourceValue to identify the associated resource.",
-            "nullable": true,
-            "example": "EVENT"
+            "nullable": true
           },
           "resourceValue": {
             "type": "string",
             "description": "The identifier of the linked resource (e.g., the event ID as a string).\nUsed in conjunction with ResourceType.",
-            "nullable": true,
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "nullable": true
           },
           "resourceTitle": {
             "type": "string",
             "description": "The display title of the linked resource (e.g., the event name).\nPopulated from the resource system when available.",
-            "nullable": true,
-            "example": "Summer Gala 2025"
+            "nullable": true
           },
           "createdOn": {
             "type": "string",
             "description": "The UTC timestamp when this group was created.",
-            "format": "date-time",
-            "example": "2025-05-01T10:00:00Z"
+            "format": "date-time"
           },
           "isTechaeonCodeEnabled": {
             "type": "boolean",
-            "description": "Indicates whether a unique short alphanumeric code has been generated and assigned to each techaeon in this group.\nWhen true, all techaeons in the group have a TechaeonCode that can be used for QR code generation or manual entry.",
-            "example": true
+            "description": "Indicates whether a unique short alphanumeric code has been generated and assigned to each techaeon in this group.\nWhen true, all techaeons in the group have a TechaeonCode that can be used for QR code generation or manual entry."
           }
         }
       },
@@ -812,24 +776,20 @@
             "type": "string",
             "description": "The unique identifier of the event to link to this group. Optional.\nWhen provided, Entry privileges are bulk-assigned to all techaeons in the group for this event.",
             "format": "guid",
-            "nullable": true,
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "nullable": true
           },
           "groupName": {
             "type": "string",
-            "description": "The updated display name for the techaeon group. Required.",
-            "example": "VIP Guests - Summer Gala 2025"
+            "description": "The updated display name for the techaeon group. Required."
           },
           "redirectUrl": {
             "type": "string",
             "description": "The updated redirect URL for all techaeons in this group. Optional.\nPass null or an empty string to remove the existing group-level redirect.",
-            "nullable": true,
-            "example": "https://example.com/checkin"
+            "nullable": true
           },
           "isTechaeonCodeEnabled": {
             "type": "boolean",
-            "description": "When true, ensures all techaeons in the group have a unique short alphanumeric code assigned.\nIf toggled from false to true, codes are generated and assigned to all existing techaeons in the group that do not already have one.",
-            "example": true
+            "description": "When true, ensures all techaeons in the group have a unique short alphanumeric code assigned.\nIf toggled from false to true, codes are generated and assigned to all existing techaeons in the group that do not already have one."
           }
         }
       },
@@ -871,25 +831,21 @@
           "phone": {
             "type": "string",
             "description": "The phone number of the techaeon holder, including country code.\nOptional, but required when Email is not provided.",
-            "nullable": true,
-            "example": "+12025550191"
+            "nullable": true
           },
           "firstName": {
             "type": "string",
-            "description": "The first name of the techaeon holder. Required.",
-            "example": "John"
+            "description": "The first name of the techaeon holder. Required."
           },
           "lastName": {
             "type": "string",
             "description": "The last name of the techaeon holder. Optional.",
-            "nullable": true,
-            "example": "Doe"
+            "nullable": true
           },
           "email": {
             "type": "string",
             "description": "The email address of the techaeon holder.\nOptional, but required when Phone is not provided.",
-            "nullable": true,
-            "example": "john.doe@example.com"
+            "nullable": true
           }
         }
       },
@@ -902,39 +858,33 @@
             "type": "string",
             "description": "The unique identifier of the holder record within the system.",
             "format": "guid",
-            "nullable": true,
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "nullable": true
           },
           "phone": {
             "type": "string",
             "description": "The phone number of the holder, including country code.",
-            "nullable": true,
-            "example": "+12025550191"
+            "nullable": true
           },
           "firstName": {
             "type": "string",
             "description": "The first name of the holder.",
-            "nullable": true,
-            "example": "John"
+            "nullable": true
           },
           "lastName": {
             "type": "string",
             "description": "The last name of the holder.",
-            "nullable": true,
-            "example": "Doe"
+            "nullable": true
           },
           "email": {
             "type": "string",
             "description": "The email address of the holder.",
-            "nullable": true,
-            "example": "john.doe@example.com"
+            "nullable": true
           },
           "userId": {
             "type": "string",
             "description": "The unique identifier of the platform user account linked to this holder, if any.\nnull if the holder does not have an associated user account on the platform.",
             "format": "guid",
-            "nullable": true,
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "nullable": true
           }
         }
       },

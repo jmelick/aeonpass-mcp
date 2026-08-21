@@ -68,6 +68,17 @@ const operations = (spec) =>
     )
     .sort();
 
+/**
+ * Pretty JSON with `example` values stripped. NSwag regenerates request-body
+ * `example` blocks with fresh random GUIDs on every render, so a raw body
+ * comparison would report a phantom change on every run. Stripping them — for
+ * both the comparison and the stored snapshot — leaves a view that only moves
+ * on a real contract change (a type, an operation, a required flag). Snapshots
+ * are therefore example-free; `--write` refreshes them in that form.
+ */
+const stableView = (spec) =>
+  JSON.stringify(spec, (key, value) => (key === "example" ? undefined : value), 2) + "\n";
+
 const write = process.argv.includes("--write");
 let problems = 0;
 
@@ -84,7 +95,7 @@ for (const name of SPECS) {
   const liveOps = operations(live);
   // Must match how the snapshot is written below, or the body comparison
   // reports a change on every run.
-  const serialised = JSON.stringify(live, null, 2) + "\n";
+  const serialised = stableView(live);
 
   const snapPath = join(SPEC_DIR, `${name}.json`);
   if (existsSync(snapPath)) {

@@ -623,15 +623,6 @@
       },
       "PortalListGuestEndPointRequest": {
         "type": "object",
-        "example": {
-          "designMappingId": null,
-          "pageNo": 1,
-          "pageSize": 10,
-          "searchTerm": null,
-          "groupId": null,
-          "sortBy": null,
-          "sortDirection": null
-        },
         "additionalProperties": false,
         "properties": {
           "designMappingId": {
@@ -924,12 +915,6 @@
       },
       "PortalInviteGuestEndPointRequest": {
         "type": "object",
-        "example": {
-          "eventId": "8f400d0a-7f0b-4b0d-bca0-0463e1b6b471",
-          "sendToAll": false,
-          "guestIds": [],
-          "inviteMessageTemplate": "Invite message template"
-        },
         "additionalProperties": false,
         "required": [
           "eventId"
@@ -959,13 +944,6 @@
       },
       "PortalSendMessageToGuestEndPointRequest": {
         "type": "object",
-        "example": {
-          "eventId": "bcc24655-b159-4bd9-aa37-a0434df83772",
-          "guestIds": [],
-          "messageBody": "",
-          "typeIds": null,
-          "sendToAll": null
-        },
         "additionalProperties": false,
         "required": [
           "eventId"
